@@ -1,11 +1,8 @@
-<script setup>
-import { RouterLink, RouterView } from 'vue-router'
-</script>
 
 <template>
     <div class="wrapper">
       <nav class="choose">
-        <RouterLink class="choose_text" to="/">Waiting</RouterLink>
+        <RouterLink class="choose_text" to="/">Waitting</RouterLink>
         <RouterLink class="choose_text" to="/someDay">Some Day</RouterLink>
         <RouterLink class="choose_text" to="/incoming">Incoming</RouterLink>
         <RouterLink class="choose_text" to="/completed">Completed</RouterLink>
@@ -17,6 +14,22 @@ import { RouterLink, RouterView } from 'vue-router'
     </div>
     
 </template>
+
+<script setup>
+import { RouterLink, RouterView, useRoute, onBeforeRouteUpdate } from 'vue-router'
+import { useModalsStore } from './stores/ModalsDate'
+
+const route = useRoute()
+const modalsStore = useModalsStore()
+
+modalsStore.setActivePage(route.name)
+onBeforeRouteUpdate(to=>{
+  modalsStore.setActivePage(to.name)
+})
+// Я не могу это использовать onBeforeRouteUpdate в корневом элементе
+</script>
+
+
 
 <style scoped>
 .wrapper {

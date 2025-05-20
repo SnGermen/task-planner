@@ -1,6 +1,5 @@
 <template>
-  <button @click="toogleActive()">Add Task</button>
-  <div class="modal" v-if="modalActive">
+  <div class="modal">
     <div class="modal_wrapper">
       <header class="modal_header">
         <input class="modal_title" type="text" placeholder="Title" v-model="title">
@@ -9,47 +8,38 @@
         <textarea class="modal_description" placeholder="Description" v-model="description"></textarea>
       </main>
       <footer class="modal_footer">
-        <button class="modal_button" @click="toogleActive()">Close</button>
-        <button class="modal_button" @click="getDates()" >Create</button>
+        <button class="modal_button" @click="$emit('close')">Close</button> 
+        <!-- Нужно понять как работает  emit.. это реально гениально -->
+        <button class="modal_button" @click="submitTask">Create</button>
       </footer>
     </div>
-    
   </div>
 </template>
-<script >
-import { ref } from 'vue';
-import {useModalsStore} from "../stores/ModalsDate"
-export default{
-  name:"Modal",
-  setup(){
-    const modalsStore = useModalsStore()
-    const modalActive = ref(false)
-    const title = ref("")
-    const description = ref("")
-    
-    const toogleActive = ()=> modalActive.value = !modalActive.value
-    const getDates =()=>{
-      if(title.value.trim() && description.value.trim()){
-        modalsStore.getDates({
-          title: title.value,
-          description: description.value,
-        })
-      } else{
-        console.log("fill in all fields")
-      }
-    }
-      return {
-        modalActive,
-        toogleActive,
-        title,
-        description,
-        modalsStore,
-        getDates
-  }
-  },
 
+<script setup>
+import { ref } from 'vue'
+import { useModalsStore } from '../stores/ModalsDate'
+
+const title = ref('')
+const description = ref('')
+const modalsStore = useModalsStore()
+
+function submitTask() {
+  if (title.value && description.value) {
+    modalsStore.addTheDatestoTheStorage({
+      title: title.value,
+      description: description.value
+    })
+    title.value = ''
+    description.value = ''
+    emit('close')
+  } else {
+    console.log("Заполни оба поля")
+  }
 }
+const emit = defineEmits(['close'])
 </script>
+
 <style scoped>
 .modal {
   position: fixed;
@@ -75,22 +65,26 @@ export default{
 .modal_header {
   display: flex;
   align-items: flex-start;
+  justify-content: center;
+  width: 100%;
 }
 .modal_title {
   max-width: 500px;
   height: 5vh;
-  width: 100vh;
+  width: 100%;
   border-radius: 10px;
   font-size: 20px;
 }
 .modal_main {
   display: flex;
   align-items: flex-start;
+  justify-content: center;
+  width: 100%;
 }
 .modal_description {
   max-width: 500px;
   height: 15vh;
-  width: 100vh;
+  width: 100%;
   border-radius: 10px;
   resize: none;
   font-size: 15px;
