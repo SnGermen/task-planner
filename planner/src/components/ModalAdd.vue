@@ -23,6 +23,7 @@ import { useModalsStore } from '../stores/ModalsDate'
 const title = ref('')
 const description = ref('')
 const modalsStore = useModalsStore()
+const emit = defineEmits(['close'])
 
 function submitTask() {
   if (title.value && description.value) {
@@ -37,7 +38,6 @@ function submitTask() {
     console.log("Заполни оба поля")
   }
 }
-const emit = defineEmits(['close'])
 </script>
 
 <style scoped>

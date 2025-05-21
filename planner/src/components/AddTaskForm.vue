@@ -11,8 +11,8 @@ import { useModalsStore } from '../stores/ModalsDate'
 import { computed } from 'vue'
 
 const modalsStore = useModalsStore()
-const activePage = modalsStore.activePage
-const tasks = computed(() => modalsStore.modalDates[activePage.value])
+// const activePage = modalsStore.activePage
+const tasks = computed(() => modalsStore.modalDates)
 </script>
 
 <style scoped>

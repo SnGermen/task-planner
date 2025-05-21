@@ -2,7 +2,7 @@
   <div>
     <button @click="toggleModal">Add Task</button>
     <Modal v-if="showModal" @close="toggleModal" />
-    <AddTask v-if="showModal"/>
+    <AddTask/>
   </div>
 </template>
 
@@ -18,7 +18,6 @@ function toggleModal() {
   showModal.value = !showModal.value
 }
 </script>
-
 
 <style scoped>
 </style>
