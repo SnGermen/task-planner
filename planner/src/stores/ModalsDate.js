@@ -16,7 +16,6 @@ export const useModalsStore = defineStore('modalStore', () => {
       title: task.title,
       description: task.description,
       category: task.category
-
     });
     console.log('Current Tasks:', modalDates)
   }

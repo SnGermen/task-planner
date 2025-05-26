@@ -1,5 +1,5 @@
 <template>
-  <div v-for="task in tasks" :key="task.id" class="task">
+  <div v-for="task in filter" :key="task.id" class="task">
     <div class="title">{{ task.title }}</div>
     <div class="description">{{ task.description }}</div>
   </div>
@@ -12,10 +12,10 @@ import { storeToRefs } from 'pinia'
 
 const modalsStore = useModalsStore()
 const {activePage, modalDates} = storeToRefs(modalsStore)
-const tasks = computed(() => modalsStore.modalDates.filter(e=>e))
+// const tasks = computed(() => modalsStore.modalDates.filter(e=>e))
 
 
-const filter = computed(() => modalDates.value.filter(e=>e.category == activePage.value))
+const filter = computed(() => modalDates.value.filter(e=>e.category === activePage.value))
 </script>
 
 <style scoped>

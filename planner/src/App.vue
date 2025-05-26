@@ -15,24 +15,20 @@
 </template>
 
 <script setup>
-import { RouterLink, RouterView, useRoute, onBeforeRouteUpdate} from 'vue-router'
-import { onMounted } from 'vue'
+import { RouterLink, RouterView, useRoute } from 'vue-router'
+import { watch } from 'vue'
 import { useModalsStore } from './stores/ModalsDate'
 
 const route = useRoute()
 const modalsStore = useModalsStore()
 
 modalsStore.setActivePage(route.name)
-onBeforeRouteUpdate(to=>{
-  modalsStore.setActivePage(to.name)
-})
 
-function setActivePage(page){
-  modalsStore.setActivePage(page)
-}
- onMounted(()=>{
-  setActivePage("waitting")
- })
+watch(() => route.name, (newName) => {
+  if (newName) {
+    modalsStore.setActivePage(newName)
+  }
+})
 </script>
 
 

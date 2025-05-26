@@ -19,11 +19,12 @@
 <script setup>
 import { ref } from 'vue'
 import { useModalsStore } from '../stores/ModalsDate'
-
+import { storeToRefs } from 'pinia'
 const title = ref('')
 const description = ref('')
 const modalsStore = useModalsStore()
 const emit = defineEmits(['close'])
+const {activePage} = storeToRefs(modalsStore)
 
 function submitTask() {
   if (title.value && description.value) {
