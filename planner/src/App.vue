@@ -1,4 +1,3 @@
-
 <template>
     <div class="wrapper">
       <nav class="choose">
@@ -16,7 +15,8 @@
 </template>
 
 <script setup>
-import { RouterLink, RouterView, useRoute, onBeforeRouteUpdate } from 'vue-router'
+import { RouterLink, RouterView, useRoute, onBeforeRouteUpdate} from 'vue-router'
+import { onMounted } from 'vue'
 import { useModalsStore } from './stores/ModalsDate'
 
 const route = useRoute()
@@ -26,7 +26,13 @@ modalsStore.setActivePage(route.name)
 onBeforeRouteUpdate(to=>{
   modalsStore.setActivePage(to.name)
 })
-// Я не могу это использовать onBeforeRouteUpdate в корневом элементе
+
+function setActivePage(page){
+  modalsStore.setActivePage(page)
+}
+ onMounted(()=>{
+  setActivePage("waitting")
+ })
 </script>
 
 

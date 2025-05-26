@@ -5,7 +5,7 @@ import { defineStore } from 'pinia';
 export const useModalsStore = defineStore('modalStore', () => {
 
   const modalDates = ref([]);
-  const activePage = ref("waitting")
+  const activePage = ref("")
 
   function setActivePage(page) {
     activePage.value = page
@@ -15,6 +15,8 @@ export const useModalsStore = defineStore('modalStore', () => {
       id: Date.now(),
       title: task.title,
       description: task.description,
+      category: task.category
+
     });
     console.log('Current Tasks:', modalDates)
   }

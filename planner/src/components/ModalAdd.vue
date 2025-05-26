@@ -29,7 +29,8 @@ function submitTask() {
   if (title.value && description.value) {
     modalsStore.addTheDatestoTheStorage({
       title: title.value,
-      description: description.value
+      description: description.value,
+      category: activePage.value,
     })
     title.value = ''
     description.value = ''
