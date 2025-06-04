@@ -12,7 +12,6 @@ import { storeToRefs } from 'pinia'
 
 const modalsStore = useModalsStore()
 const {activePage, modalDates} = storeToRefs(modalsStore)
-// const tasks = computed(() => modalsStore.modalDates.filter(e=>e))
 
 
 const filter = computed(() => modalDates.value.filter(e=>e.category === activePage.value))
