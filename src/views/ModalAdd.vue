@@ -19,13 +19,18 @@
 <script setup>
 import { ref } from 'vue'
 import { useModalsStore } from '../stores/ModalsDate'
+import { useActivePageStore } from '../stores/activePage'
 import { storeToRefs } from 'pinia'
 
 const title = ref('')
 const description = ref('')
+
 const modalsStore = useModalsStore()
+const activePageStore = useActivePageStore()
+
 const emit = defineEmits(['close'])
-const { activePage } = storeToRefs(modalsStore)
+
+const { activePage } = storeToRefs(activePageStore)
 
 function submitTask() {
   if (title.value && description.value) {
@@ -42,6 +47,7 @@ function submitTask() {
   }
 }
 </script>
+
 
 
 <style scoped lang="scss">

@@ -1,31 +1,34 @@
-// stores/ModalsDate.js
-import { computed, reactive, ref } from 'vue';
-import { defineStore } from 'pinia';
+import { ref } from "vue"
+import { defineStore } from "pinia"
+import { loadTasks, saveTask } from "../data/db"
 
-export const useModalsStore = defineStore('modalStore', () => {
+export const useModalsStore = defineStore("modalStore", () => {
+  const modalDates = ref([])
 
-  const modalDates = ref([]);
-  const activePage = ref("")
-
-  function setActivePage(page) {
-    activePage.value = page
+  async function initStore() {
+    const tasksFromDB = await loadTasks()
+    modalDates.value = tasksFromDB
   }
-  function addTheDatestoTheStorage(task) {
-    modalDates.value.push({
+
+  async function addTheDatestoTheStorage(task) {
+    const newTask = {
       id: Date.now(),
       title: task.title,
       description: task.description,
-      category: task.category
-    });
-    console.log('Current Tasks:', modalDates)
+      category: task.category,
+      isTrashed: false,
+      isDone: false,
+    }
+    await saveTask(newTask)
+    modalDates.value.push(newTask)
+    console.log("Добавлена задача:", newTask)
   }
 
-
   return {
-    activePage,
     modalDates,
-    setActivePage,
+    initStore,
     addTheDatestoTheStorage,
-
-  };
-});
+    loadTasks,
+    saveTask,
+  }
+})
