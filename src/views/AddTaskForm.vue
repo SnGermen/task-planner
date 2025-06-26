@@ -1,8 +1,11 @@
 <template>
-  <div
+ <SearchTags @sendTags="filterBytag"/>
+ <div
     v-for="task in filter"
     :key="task.id"
-    class="task">
+    class="task"
+    :class="{ done: task.isDone, trashed: task.category === 'trash' }"
+  >
     <input 
       type="checkbox" 
       :checked="task.isDone"
@@ -12,6 +15,8 @@
     <div class="task_text">
       <div class="task_title">{{ task.title }}</div>
       <div class="task_description">{{ task.description }}</div>
+      <div v-if="task.tags" class="task_tags">{{ task.tags }}</div>
+
     </div>
     <button @click="moveToTrash(task.id)" class="task_delete">🗑️</button>
   </div>
@@ -20,38 +25,51 @@
 
 <script setup>
 import { useModalsStore } from '../stores/ModalsDate'
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useActivePageStore } from '../stores/activePage' 
 import { saveTask } from '../data/db'
+import SearchTags from "./SearchTags.vue"
 
 const modalsStore = useModalsStore()
 const activePageStore = useActivePageStore()
+const currentTag = ref("")
 
 const { modalDates } = storeToRefs(modalsStore)
 const { activePage } = storeToRefs(activePageStore)
 
-const filter = computed(() =>
-  modalDates.value.filter(e => e.category === activePage.value )
-)
+const filter = computed(() =>{
+  return modalDates.value.filter(task =>{
+    const categoryMatch = task.category == activePage.value
+    const tagSearch = currentTag.value.replace(/^#/, "")
+    const tagMatch = currentTag.value
+    ?(task.tags || "")
+    .split(" ")
+    .some(tag => tag.replace(/^#/, "").startsWith(tagSearch))
+  :true
+  return categoryMatch && tagMatch
+
+})
+})
+function filterBytag(tag){
+  currentTag.value = tag.trim()
+}
 
 async function moveToTrash(taskId) {
-  const task = modalDates.value.find((t) => t.id == taskId)
+  const task = modalDates.value.find(t => t.id === taskId)
   if (task) {
     task.isTrashed = true
     task.category = "trash"
-    await saveTask({ ...task }) // <-- прямой вызов
+    await saveTask({ ...task })
   }
 }
 
 async function moveToDone(taskId, isDone) {
-  const task = modalDates.value.find((t) => t.id == taskId)
+  const task = modalDates.value.find(t => t.id === taskId)
   if (!task) return
 
   if (isDone) {
-    if (!task.originCategory) {
-      task.originCategory = task.category
-    }
+    if (!task.originCategory) task.originCategory = task.category
     task.category = "done"
     task.isDone = true
   } else {
@@ -59,41 +77,43 @@ async function moveToDone(taskId, isDone) {
     task.isDone = false
   }
 
-  await saveTask({ ...task }) // <-- прямой вызов
+  await saveTask({ ...task })
 }
 </script>
-
-
 
 <style scoped lang="sass">
 .task
   position: relative
   display: flex
   align-items: center
-  color: white
-  padding: 10px 50px 10px 10px
-  border: 1px solid white
-  border-radius: 10px
-  margin: 10px
-  background-color: #222
-  transition: background-color 0.3s ease
+  padding: 16px 60px 16px 16px
+  margin: 12px 0
+  width: 100%
+  border-radius: 12px
+  border: 1px solid #444
+  background-color: #1e1e1e
 
   &:hover
-    background-color: #333
+    background-color: #2a2a2a
+
+  &.done
+    border-left: 4px solid #27ae60
+
+  &.trashed
+    border-left: 4px solid #e74c3c
 
 .checkbox
-  width: 20px
-  height: 20px
-  cursor: pointer
-  margin-right: 15px
-  -webkit-appearance: none
-  -moz-appearance: none
-  appearance: none
+  width: 22px
+  height: 22px
+  margin-right: 18px
   border: 2px solid white
-  border-radius: 5px
-  background-color: transparent
-  position: relative
-  transition: background-color 0.3s ease, border-color 0.3s ease
+  border-radius: 6px
+  background: transparent
+  appearance: none
+  display: flex
+  align-items: center
+  justify-content: center
+  cursor: pointer
 
   &:checked
     background-color: #f1c40f
@@ -101,10 +121,7 @@ async function moveToDone(taskId, isDone) {
 
     &::after
       content: ""
-      position: absolute
-      left: 5px
-      top: 2px
-      width: 5px
+      width: 6px
       height: 10px
       border: solid white
       border-width: 0 2px 2px 0
@@ -113,29 +130,37 @@ async function moveToDone(taskId, isDone) {
 .task_text
   display: flex
   flex-direction: column
+  flex-grow: 1
 
 .task_title
-  font-weight: bold
-  font-size: 25px
+  font-size: 30px
+  font-weight: 600
+  color: #fff
 
 .task_description
-  margin-top: 5px
+  font-size: 2vh
+  word-wrap: break-word
+  max-width: 1000px
+  width: 100%
+  line-height: 1.4
+.task_tags
   font-size: 15px
+  color: rgba(255, 255, 255, 0.6)
+
 
 .task_delete
   position: absolute
   top: 50%
-  right: 15px
+  right: 20px
   transform: translateY(-50%)
   background: transparent
   border: none
-  color: #bbb
+  color: #aaa
   font-size: 22px
   cursor: pointer
-  transition: color 0.3s ease, transform 0.3s ease
 
   &:hover
-    color: #ff4d4d
-    transform: translateY(-50%) scale(1.2)
+    color: #e74c3c
+
 
 </style>

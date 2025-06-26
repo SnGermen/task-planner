@@ -34,5 +34,6 @@ export const sections = [
     title: "Trash",
     icon: "🗑️",
     isShowAddTaskButton: false,
+    isSerchTags: false,
   },
 ]

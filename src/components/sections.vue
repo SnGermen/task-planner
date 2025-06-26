@@ -20,9 +20,8 @@
         class="wrapper__add-button"
         @click="toggleModal"
       >
-        Add Task
+        Add TasSk
       </button>
-
       <ModalAdd v-if="showModal" @close="toggleModal" />
       <AddTaskForm />
     </div>
@@ -34,10 +33,10 @@ import { ref, computed, onMounted } from "vue"
 import { useModalsStore } from "../stores/ModalsDate"
 import { storeToRefs } from "pinia"
 import { sections } from "../data/sections.js"
-import { useActivePageStore } from "../stores/activePage.js" 
-
+import { useActivePageStore } from "../stores/activePage.js"
 import ModalAdd from "../views/ModalAdd.vue"
 import AddTaskForm from "../views/AddTaskForm.vue"
+import SearchTags from "../views/SearchTags.vue"
 
 const modalsStore = useModalsStore()
 const activePageStore = useActivePageStore() 

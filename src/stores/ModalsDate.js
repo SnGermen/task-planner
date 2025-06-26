@@ -18,6 +18,7 @@ export const useModalsStore = defineStore("modalStore", () => {
       category: task.category,
       isTrashed: false,
       isDone: false,
+      tags: task.tags,
     }
     await saveTask(newTask)
     modalDates.value.push(newTask)
