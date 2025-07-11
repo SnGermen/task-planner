@@ -1,21 +1,22 @@
 <template>
   <input
     type="text"
-    v-model="findeTags"
-    @input="getDates"
-    placeholder="Поиск по тегам..."
+    v-model="valueOfInput"
+    placeholder="#"
     class="search-input"
   />
 </template>
 
 <script setup>
-import { ref } from "vue"
-const findeTags = ref("")
-const emit = defineEmits(["sendTags"])
+import { ref, computed, watch } from "vue"
+import {storeOfTags} from "../stores/SearchTags.js"
 
-function getDates() {
-  emit("sendTags", findeTags.value)
-}
+const valueOfInput = ref("")
+const tagsStore = storeOfTags()
+
+watch(valueOfInput, (newTag)=>{
+  tagsStore.setTags(newTag)
+})
 </script>
 
 <style scoped lang="sass">

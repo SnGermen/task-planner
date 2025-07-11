@@ -33,3 +33,15 @@ export async function loadTasks() {
     request.onerror = (e) => reject(e)
   })
 }
+
+export async function deleteTask(taskId) {
+  const db = await openDB()
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction("tasks", "readwrite")
+    const store = tx.objectStore("tasks")
+    const request = store.delete(taskId)
+
+    request.onsuccess = () => resolve(true)
+    request.onerror = (e) => reject(e)
+  })
+}

@@ -1,5 +1,4 @@
 <template>
- <SearchTags @sendTags="filterBytag"/>
  <div
     v-for="task in filter"
     :key="task.id"
@@ -18,6 +17,7 @@
       <div v-if="task.tags" class="task_tags">{{ task.tags }}</div>
 
     </div>
+    <button v-if="task.category == 'trash'" @click="restoreTask(task.id)" class="task_resolve">♻️</button>
     <button @click="moveToTrash(task.id)" class="task_delete">🗑️</button>
   </div>
 </template>
@@ -25,24 +25,25 @@
 
 <script setup>
 import { useModalsStore } from '../stores/ModalsDate'
-import { computed, ref } from 'vue'
+import { computed, ref, inject } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useActivePageStore } from '../stores/activePage' 
 import { saveTask } from '../data/db'
-import SearchTags from "./SearchTags.vue"
+import {storeOfTags} from "../stores/SearchTags"
+import {deleteTask} from '../data/db'
 
 const modalsStore = useModalsStore()
 const activePageStore = useActivePageStore()
-const currentTag = ref("")
-
+const tagsStore = storeOfTags()
 const { modalDates } = storeToRefs(modalsStore)
 const { activePage } = storeToRefs(activePageStore)
+const {saveTags} = storeToRefs(tagsStore)
 
 const filter = computed(() =>{
   return modalDates.value.filter(task =>{
     const categoryMatch = task.category == activePage.value
-    const tagSearch = currentTag.value.replace(/^#/, "")
-    const tagMatch = currentTag.value
+    const tagSearch = (saveTags.value || "").replace(/^#/, "")
+    const tagMatch = saveTags.value
     ?(task.tags || "")
     .split(" ")
     .some(tag => tag.replace(/^#/, "").startsWith(tagSearch))
@@ -51,23 +52,37 @@ const filter = computed(() =>{
 
 })
 })
-function filterBytag(tag){
-  currentTag.value = tag.trim()
-}
+
 
 async function moveToTrash(taskId) {
   const task = modalDates.value.find(t => t.id === taskId)
+  if(task.category == "trash"){
+    await deleteTask(taskId)
+    modalDates.value = modalDates.value.filter(t => t.id !== taskId) // убрать из интерфейса
+
+    return
+  }
   if (task) {
+    task.originCategory = task.category 
     task.isTrashed = true
     task.category = "trash"
     await saveTask({ ...task })
   }
+
+}
+async function restoreTask(taskId){
+  const task = modalDates.value.find(t => t.id === taskId)
+  if(!task || task.category !== "trash") return
+
+  task.category = task.originCategory
+  task.isTrashed = false
+  await saveTask({ ...task})
 }
 
 async function moveToDone(taskId, isDone) {
   const task = modalDates.value.find(t => t.id === taskId)
-  if (!task) return
-
+  if (!task || task.category == "trash") return
+ 
   if (isDone) {
     if (!task.originCategory) task.originCategory = task.category
     task.category = "done"
@@ -95,12 +110,53 @@ async function moveToDone(taskId, isDone) {
 
   &:hover
     background-color: #2a2a2a
+    color: #e74c3c
 
   &.done
     border-left: 4px solid #27ae60
 
   &.trashed
     border-left: 4px solid #e74c3c
+
+  &_text
+    display: flex
+    flex-direction: column
+    flex-grow: 1
+
+  &_title
+    font-size: 30px
+    font-weight: 600
+    color: #fff
+
+  &_description
+    font-size: 2vh
+    word-wrap: break-word
+    max-width: 1000px
+    width: 100%
+    line-height: 1.4
+
+  &_tags
+    font-size: 15px
+    color: rgba(255, 255, 255, 0.6)
+
+  &_delete
+    position: absolute
+    top: 50%
+    right: 20px
+    transform: translateY(-50%)
+    background: transparent
+    border: none
+    color: #aaa
+    font-size: 22px
+    cursor: pointer
+
+  &_resolve
+    margin-left: 8px
+    cursor: pointer
+    background: none
+    border: none
+    font-size: 1.2rem
+    color: #4cd137
 
 .checkbox
   width: 22px
@@ -126,41 +182,5 @@ async function moveToDone(taskId, isDone) {
       border: solid white
       border-width: 0 2px 2px 0
       transform: rotate(45deg)
-
-.task_text
-  display: flex
-  flex-direction: column
-  flex-grow: 1
-
-.task_title
-  font-size: 30px
-  font-weight: 600
-  color: #fff
-
-.task_description
-  font-size: 2vh
-  word-wrap: break-word
-  max-width: 1000px
-  width: 100%
-  line-height: 1.4
-.task_tags
-  font-size: 15px
-  color: rgba(255, 255, 255, 0.6)
-
-
-.task_delete
-  position: absolute
-  top: 50%
-  right: 20px
-  transform: translateY(-50%)
-  background: transparent
-  border: none
-  color: #aaa
-  font-size: 22px
-  cursor: pointer
-
-  &:hover
-    color: #e74c3c
-
 
 </style>
