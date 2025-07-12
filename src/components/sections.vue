@@ -36,17 +36,15 @@
       <button
         class="pomodoro__button"
         @click="togglePomodoro"
-        :class="{ 'pomodoro__button--open': isPomodoroOpen }"
+        :class="{ 'pomodoro__button_open': isPomodoroOpen }"
+
       >
         🍅
       </button>
 
-      <div
-        v-if="isPomodoroOpen"
-        class="pomodoro__panel"
-      >
-        <PomodoroTimer />
-      </div>
+      <!-- Pomodoro Timer Component -->
+      <PomodoroTimer v-if="isPomodoroOpen" @close="isPomodoroOpen = false" />
+      
     </div>
   </div>
 </template>
@@ -172,16 +170,8 @@ onMounted(() => {
     &:hover
       transform: scale(1.1)
 
-    &--open
+    &_open
       background-color: #f44336
 
-  &__panel
-    position: absolute
-    bottom: 80px
-    right: 0
-    width: 300px
-    background: #1e1e1e
-    border-radius: 10px
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3)
-    padding: 1rem
+
 </style>

@@ -110,8 +110,6 @@ async function moveToDone(taskId, isDone) {
 
   &:hover
     background-color: #2a2a2a
-    color: #e74c3c
-
   &.done
     border-left: 4px solid #27ae60
 
