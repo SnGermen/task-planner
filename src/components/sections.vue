@@ -30,14 +30,11 @@
         <AddTaskForm />
       </div>
     </div>
-
-    <!-- 🍅 Pomodoro floating button -->
     <div class="pomodoro">
       <button
         class="pomodoro__button"
         @click="togglePomodoro"
         :class="{ 'pomodoro__button_open': isPomodoroOpen }"
-
       >
         🍅
       </button>
@@ -58,7 +55,7 @@ import { useActivePageStore } from "../stores/activePage.js"
 import ModalAdd from "../views/ModalAdd.vue"
 import AddTaskForm from "../views/AddTaskForm.vue"
 import SearchTags from "../views/SearchTags.vue"
-import PomodoroTimer from "../views/Pomodora.vue" // Добавь компонент таймера
+import PomodoroTimer from "../views/Pomodora.vue" 
 
 const modalsStore = useModalsStore()
 const activePageStore = useActivePageStore()
@@ -149,7 +146,6 @@ onMounted(() => {
     &:hover
       background-color: #666
 
-// 🍅 Pomodoro styles
 .pomodoro
   position: fixed
   bottom: 20px

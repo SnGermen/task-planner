@@ -24,12 +24,19 @@ export const useModalsStore = defineStore("modalStore", () => {
     modalDates.value.push(newTask)
     console.log("Добавлена задача:", newTask)
   }
-
+  function upDateTask(task) {
+    const index = modalDates.value.findIndex((i) => i.id === task.id)
+    if (index !== -1) {
+      modalDates.value[index] = task
+      saveTask(task)
+    }
+  }
   return {
     modalDates,
     initStore,
     addTheDatestoTheStorage,
     loadTasks,
     saveTask,
+    upDateTask,
   }
 })

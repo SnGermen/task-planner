@@ -17,20 +17,23 @@
       <div v-if="task.tags" class="task_tags">{{ task.tags }}</div>
 
     </div>
+    <button class="configurate" @click="toggleConfig(task.id)"></button>
     <button v-if="task.category == 'trash'" @click="restoreTask(task.id)" class="task_resolve">♻️</button>
     <button @click="moveToTrash(task.id)" class="task_delete">🗑️</button>
+    <ConfigurateTheTask v-if="activeTaskId == task.id" />
   </div>
 </template>
 
 
 <script setup>
 import { useModalsStore } from '../stores/ModalsDate'
-import { computed, ref, inject } from 'vue'
+import { computed, ref,  } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useActivePageStore } from '../stores/activePage' 
 import { saveTask } from '../data/db'
 import {storeOfTags} from "../stores/SearchTags"
 import {deleteTask} from '../data/db'
+import ConfigurateTheTask from "../views/ConfigurateTheTask.vue"
 
 const modalsStore = useModalsStore()
 const activePageStore = useActivePageStore()
@@ -38,6 +41,8 @@ const tagsStore = storeOfTags()
 const { modalDates } = storeToRefs(modalsStore)
 const { activePage } = storeToRefs(activePageStore)
 const {saveTags} = storeToRefs(tagsStore)
+const activeTaskId  = ref(null)
+
 
 const filter = computed(() =>{
   return modalDates.value.filter(task =>{
@@ -53,6 +58,9 @@ const filter = computed(() =>{
 })
 })
 
+function toggleConfig(taskId){
+  activeTaskId.value = activeTaskId.value == taskId ? null : taskId
+}
 
 async function moveToTrash(taskId) {
   const task = modalDates.value.find(t => t.id === taskId)
