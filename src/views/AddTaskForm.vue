@@ -17,11 +17,18 @@
       <div v-if="task.tags" class="task_tags">{{ task.tags }}</div>
 
     </div>
-    <button class="configurate" @click="toggleConfig(task.id)"></button>
-    <button v-if="task.category == 'trash'" @click="restoreTask(task.id)" class="task_resolve">♻️</button>
-    <button @click="moveToTrash(task.id)" class="task_delete">🗑️</button>
-    <ConfigurateTheTask v-if="activeTaskId == task.id" />
+
+  <div class="task_actions">
+  <button v-if="task.category !=='trash'" class="configurate" @click="toggleConfig(task)">⚙️</button>
+  <button v-if="task.category == 'trash'" @click="restoreTask(task.id)" class="task_resolve">♻️</button>
+  <button @click="moveToTrash(task.id)" class="task_delete">🗑️</button>
+</div>
+
   </div>
+    <ConfigurateTheTask 
+    v-if="modalConfig " 
+    :task="selectedTask"
+    @close="modalConfig = false"/>
 </template>
 
 
@@ -41,7 +48,8 @@ const tagsStore = storeOfTags()
 const { modalDates } = storeToRefs(modalsStore)
 const { activePage } = storeToRefs(activePageStore)
 const {saveTags} = storeToRefs(tagsStore)
-const activeTaskId  = ref(null)
+const modalConfig  = ref(false)
+const selectedTask = ref(null)
 
 
 const filter = computed(() =>{
@@ -58,8 +66,9 @@ const filter = computed(() =>{
 })
 })
 
-function toggleConfig(taskId){
-  activeTaskId.value = activeTaskId.value == taskId ? null : taskId
+function toggleConfig(task){
+  selectedTask.value = task
+  modalConfig.value = true
 }
 
 async function moveToTrash(taskId) {
@@ -189,4 +198,26 @@ async function moveToDone(taskId, isDone) {
       border-width: 0 2px 2px 0
       transform: rotate(45deg)
 
+.task_actions
+  display: flex
+  align-items: center
+
+.configurate,
+.task_delete,
+.task_resolve
+  background: transparent
+  border: none
+  font-size: 22px
+  cursor: pointer
+  color: #aaa
+  transition: color 0.2s
+
+  &:hover
+    color: #fff
+
+.task_resolve
+  color: #4cd137
+
+.task_delete
+  color: #e74c3c
 </style>
