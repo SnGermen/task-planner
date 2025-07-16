@@ -70,7 +70,7 @@ function formatTags() {
 }
 
 function submitTask() {
-  formatTags() // убедимся в правильном формате
+  formatTags() 
 
   const updatedTask = {
     ...props.task,
