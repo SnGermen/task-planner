@@ -96,6 +96,8 @@ function hidePomodoro() {
   height: 100vh
   width: 100%
   color: #eee
+  padding: 10px
+
   &_box
     position: relative
     display: flex
@@ -103,7 +105,8 @@ function hidePomodoro() {
     align-items: center
     justify-content: center
     width: 100%
-    max-width: 400px
+    max-width: 600px
+    min-width: 360px
     padding: 20px
     background-color: #2c2c2c
     border-radius: 12px
@@ -118,30 +121,38 @@ function hidePomodoro() {
     font-size: 24px
     font-weight: bold
     margin-bottom: 10px
+
   &_content
     display: flex
     flex-direction: column
     align-items: center
     gap: 10px
+    width: 100%
+
   &_phase
     font-size: 20px
     font-weight: 500
     text-transform: uppercase
     color: #f1c40f
+
   &_timer
     font-size: 50px
     font-weight: bold
     color: #f39c12
+
   &_time
     display: flex
+    flex-wrap: wrap
     gap: 7px
     justify-content: center
+    width: 100%
+
   &_timeButton
     background-color: #3e3e3e
     color: #fff
     border: none
     border-radius: 8px
-    padding: 6px 10px
+    padding: 6px 12px
     font-size: 16px
     cursor: pointer
     transition: all 0.3s ease
@@ -151,6 +162,7 @@ function hidePomodoro() {
       transform: scale(1.05)
     &:active
       transform: scale(0.95)
+
   &_controls
     font-size: 18px
     padding: 10px 20px
@@ -169,29 +181,40 @@ function hidePomodoro() {
     &:hover
       background-color: #c0392b
 
-  &_close
+  &_close,
+  &_unshow
     position: absolute
     top: 10px
-    right: 10px
+    font-size: 20px
     background: none
     border: none
-    font-size: 20px
-    cursor: pointer
     color: #fff
+    cursor: pointer
     transition: transform 0.2s ease
     &:hover
       transform: scale(1.1)
 
+  &_close
+    right: 10px
+
   &_unshow
-    position: absolute
-    top: 10px
     right: 50px
-    background: none
-    border: none
-    font-size: 20px
-    cursor: pointer
-    color: #fff
-    transition: transform 0.2s ease
-    &:hover
-      transform: scale(1.1)
+
+@media screen and (max-width: 650px)
+  .pomodoro_box
+    padding: 15px
+    max-width: 95%
+    right: -20px
+
+  .pomodoro_timeButton
+    font-size: 14px
+    padding: 5px 10px
+
+  .pomodoro_timer
+    font-size: 40px
+
+  .pomodoro_controls
+    font-size: 16px
+    padding: 8px 16px
+
 </style>

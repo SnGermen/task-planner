@@ -22,7 +22,7 @@ watch(valueOfInput, (newTag)=>{
 <style scoped lang="sass">
 .search-input
   display: flex
-  width: 250px
+  width: 300px
   padding: 6px 12px
   border-radius: 8px
   border: 1px solid #555
@@ -35,4 +35,8 @@ watch(valueOfInput, (newTag)=>{
   &:focus
     border-color: #f1c40f
     background-color: #1e1e1e
+    
+@media(max-width: 700px)
+  .search-input
+    width: 200px
 </style>
