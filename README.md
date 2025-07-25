@@ -1,29 +1,52 @@
-# planner
+# 🍅 Pomodoro App — Time Management & Task Focus Tool
 
-This template should help get you started developing with Vue 3 in Vite.
+A modern Pomodoro timer and task management application built with **Vue 3**, **Pinia**, and **IndexedDB**. Designed for productivity enthusiasts, developers, and anyone looking to stay focused.
 
-## Recommended IDE Setup
+---
 
-[VSCode](https://code.visualstudio.com/) + [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur).
+## 🎯 Features
 
-## Customize configuration
+- ⏱ Fully functional Pomodoro timer (start, pause, reset)
+- 🛠 Custom session duration (5 to 60 minutes)
+- 🍅 Track completed Pomodoro cycles
+- 📝 Task creation with title, description, tags, and categories
+- 🧠 Persistent data with **IndexedDB** (via custom wrapper)
+- 🙈 Option to hide the timer while keeping it running
+- 💡 Real-time UI updates with reactive state management (Pinia)
 
-See [Vite Configuration Reference](https://vite.dev/config/).
+---
 
-## Project Setup
+## 🛠 Tech Stack
 
-```sh
+| Technology     | Description                                 |
+|----------------|---------------------------------------------|
+| **Vue 3**      | Composition API, `<script setup>` syntax    |
+| **Pinia**      | Global state management                     |
+| **IndexedDB**  | Persistent local storage for tasks/timers   |
+| **Vite**       | Lightning-fast bundler for development      |
+| **SASS**| Component-scoped styling                    |
+
+---
+
+
+---
+
+## 🚀 Getting Started
+
+1. **Clone the repository**
+
+```
+git clone https://github.com/your-username/pomodoro-app.git
+cd pomodoro-app
+```
+2.Install dependencies
+
+```
 npm install
 ```
-
-### Compile and Hot-Reload for Development
-
-```sh
+3Run the development server
+```
 npm run dev
 ```
 
-### Compile and Minify for Production
 
-```sh
-npm run build
-```
