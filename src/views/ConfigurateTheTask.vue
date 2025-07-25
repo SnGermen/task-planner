@@ -19,8 +19,19 @@
           type="text"
           placeholder="#"
           v-model="originTags"
-          @blur="formatTags"
         />
+      <nav class="modal__menu" v-if="task.category !=='done'">
+      <a 
+        v-for="section in filteredSections"
+        :key="`menu_${section.key}`"
+        class="modal__menu_item"
+        @click.prevent=  changeCategoryOfTask(section.key)
+        :class="{active: sectionSelected === section.key}"
+        
+      >
+        {{ section.title }}
+      </a>
+    </nav>
       </main>
       <footer class="modal_box_footer">
         <button class="modal_box_button modal_box_button--close" @click="$emit('close')">
@@ -35,27 +46,39 @@
 </template>
 
 <script setup>
-import { ref, watch } from 'vue'
+import { ref, watch, computed} from 'vue'
 import { useModalsStore } from '../stores/ModalsDate'
 import { storeToRefs } from 'pinia'
-
+import {sections} from "../data/sections.js"
+import { useActivePageStore } from "../stores/activePage.js"
 const props = defineProps({ task: Object })
 const emit = defineEmits(['close'])
 
 const modalsStore = useModalsStore()
 const { modalDates } = storeToRefs(modalsStore)
-
+const activePageStore = useActivePageStore()
+const { activePage } = storeToRefs(activePageStore)
 const title = ref('')
 const description = ref('')
 const originTags = ref('')
-
+const sectionSelected = ref('')
+const filteredSections = computed(()=>{
+  return sections.filter(section => section.key !== 'trash' && section.key !== 'done')
+})
 watch(() => props.task, (t) => {
   if (t) {
     title.value = t.title || ''
     description.value = t.description || ''
     originTags.value = t.tags || ''
+    sectionSelected.value = t.category || activePage.value
   }
 }, { immediate: true })
+
+function changeCategoryOfTask(key){
+  sectionSelected.value = key
+
+}
+
 
 function formatTags() {
   originTags.value = originTags.value
@@ -77,6 +100,7 @@ function submitTask() {
     title: title.value,
     description: description.value,
     tags: originTags.value,
+    category: sectionSelected.value || activePage.value,
   }
 
   const original = modalDates.value.find(t => t.id === updatedTask.id)
@@ -162,4 +186,28 @@ function submitTask() {
 
       &:active 
         transform: scale(0.95)
+
+  &__menu
+    display: flex
+    flex-wrap: wrap
+    gap: 10px
+
+    &_item
+      padding: 8px 16px
+      background-color: #2c2c2c
+      border: 1px solid #444
+      border-radius: 8px
+      color: #ccc
+      cursor: pointer
+      transition: background-color 0.2s, transform 0.2s
+
+      &:hover
+         background-color: #3a3a3a
+
+      &.active
+          background-color: #42b983
+          color: #fff
+          font-weight: bold
+          transform: scale(1.05)
+
 </style>

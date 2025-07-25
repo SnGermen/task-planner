@@ -1,93 +1,94 @@
 <template>
-<div class="pomodoro">
-  <div class="pomodoro_box">
-    <button class="pomodoro_close" @click="closeModal">❌</button>
-  <h1 class="pomodoro_title">Pomodoro</h1>
-  <div class="pomodoro_content">
-    <div class="pomodoro_phase">{{ phase }}</div>
-   <div class="pomodoro_timer"> {{ formatedTime }}</div>
-   <div class="pomodoro_buttons">
-    <button class="pomodoro_controls" @click="toggleTimer">{{ isRunning ?"⏸️ Pause" : "▶️ Start" }}</button>
-    <button class="pomodoro_controls pomodoro_controls__reset" @click="resetTimer">🔁 Reset</button>
+  <div class="pomodoro">
+    <div class="pomodoro_box">
+      <div class="pomodoro_buttons">
+        <button class="pomodoro_unshow" @click="hidePomodoro">➖</button>
+        <button class="pomodoro_close" @click="closeModal">❌</button>
+      </div>
+      <h1 class="pomodoro_title">Pomodoro</h1>
+      <div class="pomodoro_content">
+        <div class="pomodoro_phase">{{ phase }}</div>
+        <div class="pomodoro_time">
+          <button class="pomodoro_timeButton" @click="setCustomTime(5)">5</button>
+          <button class="pomodoro_timeButton" @click="setCustomTime(10)">10</button>
+          <button class="pomodoro_timeButton" @click="setCustomTime(15)">15</button>
+          <button class="pomodoro_timeButton" @click="setCustomTime(20)">20</button>
+          <button class="pomodoro_timeButton" @click="setCustomTime(25)">25</button>
+          <button class="pomodoro_timeButton" @click="setCustomTime(30)">30</button>
+          <button class="pomodoro_timeButton" @click="setCustomTime(45)">45</button>
+          <button class="pomodoro_timeButton" @click="setCustomTime(60)">60</button>
+        </div>
+        <div class="pomodoro_timer">{{ formattedTime }}</div>
+        <div class="pomodoro_buttons">
+          <button class="pomodoro_controls" @click="toggleTimer">
+            {{ isRunning ? "⏸️ Pause" : "▶️ Start" }}
+          </button>
+          <button class="pomodoro_controls pomodoro_controls__reset" @click="resetTimerAndStatus" >
+            🔁 Reset
+          </button>
+        </div>
+        <div class="ponodoro_cycles">
+          🍅Cycles completed: {{ cycleOfPomodoro }}
+        </div>
+      </div>
     </div>
-    <div class="ponodoro_cycles">
-      🍅Cycles completed: {{ cycleOfPomodoro }}
-    </div>
-</div></div>
-</div>
+  </div>
 </template>
 <script setup>
-import { computed, ref } from 'vue'
-const timeWork = 25*60; // Work  time in minutes
-const timer = ref(timeWork)
-const minBreak = 5 * 60
-const longBreak = 15 * 60
-const cycleOfPomodoro = ref(0)
-const timeId = ref(null)
-const isRunning = ref(false)
-const  phase = ref("work")
-const isClosed = ref(false)
-const emit = defineEmits(['close'])
-function setTime(){
-  if(timer.value > 0){
-    timer.value--
-  }else if(phase.value == "work"){
-    cycleOfPomodoro.value++
-    if(cycleOfPomodoro.value % 4 == 0){
-      cycleOfPomodoro.value = 0
-      timer.value = longBreak
-      phase.value = "longBreak"
-    } else{
-      timer.value = minBreak
-      phase.value = "break"
-    }
-  } else{
-    timer.value = timeWork
-    phase.value = "work"
-  
-  }
-}
+import { storeToRefs } from 'pinia'
+import { usePomodoro } from '@/stores/pomodoro'
+const emit = defineEmits(['close', 'statusOfTheTimer'])
+const pomodoro = usePomodoro()
+const {
+  phase,
+  isRunning,
+  timer,
+  formattedTime,
+  cycleOfPomodoro,
+  workTime,
+} = storeToRefs(pomodoro)
 
+const {
+  resetTimer,
+  pauseTimer,
+  startTimer,
+} = pomodoro
 
- function toggleTimer(){
-  if(isRunning.value){
-    clearInterval(timeId.value)
-    isRunning.value = false
-  }else{
-    timeId.value = setInterval(setTime, 1000)
-    isRunning.value = true
-  }
- }
-
- function resetTimer(){
-  clearInterval(timeId.value)
-  isRunning.value = false
-  timer.value = timeWork
-  cycleOfPomodoro.value = 0 
-  phase.value = "work"
-  timeId.value = null
- }
-
- const formatedTime = computed(() =>{
-  const minutes = Math.floor(timer.value / 60);
-  const seconds = timer.value % 60;
-  return `${minutes.toString().padStart(2, "0")} : ${seconds.toString().padStart(2, "0")}`
- }
-)
 
 function closeModal() {
-  isClosed.value =true
-  clearInterval(timeId.value)
+  pauseTimer()
+  resetTimer()
   isRunning.value = false
-  timer.value = timeWork
-  cycleOfPomodoro.value = 0
-  phase.value = "work"
-  timeId.value = null
+  emit('statusOfTheTimer', isRunning.value) 
+  emit('close')                             
+}
+function resetTimerAndStatus(){
+  resetTimer()
+  isRunning.value = false
+  emit('statusOfTheTimer', isRunning.value)
+}
+  function toggleTimer() {
+    if (isRunning.value) {
+      pauseTimer()
+    } else {
+      startTimer()
+    }
+      emit('statusOfTheTimer', isRunning.value)
+  }
+function hidePomodoro() {
   emit('close')
 }
+  function setCustomTime(minutes) {
+    if (phase.value === "work") {
+      timer.value = minutes * 60
+      pauseTimer()
+      emit('statusOfTheTimer', isRunning.value)
+    }
+  }
 </script>
-<style  scoped lang="sass">
- .pomodoro
+
+<style scoped lang="sass">
+.pomodoro
   display: flex
   flex-direction: column
   align-items: center
@@ -96,6 +97,7 @@ function closeModal() {
   width: 100%
   color: #eee
   &_box
+    position: relative
     display: flex
     flex-direction: column
     align-items: center
@@ -106,6 +108,12 @@ function closeModal() {
     background-color: #2c2c2c
     border-radius: 12px
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.5)
+
+  &_buttons
+    display: flex
+    gap: 10px
+    margin-bottom: 20px
+
   &_title
     font-size: 24px
     font-weight: bold
@@ -123,13 +131,27 @@ function closeModal() {
   &_timer
     font-size: 50px
     font-weight: bold
-    color: #e74c3c
-  &_buttons
+    color: #f39c12
+  &_time
     display: flex
-    gap: 10px
+    gap: 7px
+    justify-content: center
+  &_timeButton
+    background-color: #3e3e3e
+    color: #fff
+    border: none
+    border-radius: 8px
+    padding: 6px 10px
+    font-size: 16px
+    cursor: pointer
+    transition: all 0.3s ease
+    &:hover
+      background-color: #f39c12
+      color: #000
+      transform: scale(1.05)
+    &:active
+      transform: scale(0.95)
   &_controls
-    display: flex
-    gap: 10px
     font-size: 18px
     padding: 10px 20px
     border-radius: 8px
@@ -141,10 +163,12 @@ function closeModal() {
     outline: none
     &:hover
       background-color: #666
+
   &_controls__reset
     background-color: #555
     &:hover
       background-color: #c0392b
+
   &_close
     position: absolute
     top: 10px
@@ -154,11 +178,20 @@ function closeModal() {
     font-size: 20px
     cursor: pointer
     color: #fff
-    transition: color 0.2s ease
+    transition: transform 0.2s ease
+    &:hover
+      transform: scale(1.1)
 
-  &_box
-    position: relative // нужно для абсолютного позиционирования крестика
-
-
-    
-</style> 
+  &_unshow
+    position: absolute
+    top: 10px
+    right: 50px
+    background: none
+    border: none
+    font-size: 20px
+    cursor: pointer
+    color: #fff
+    transition: transform 0.2s ease
+    &:hover
+      transform: scale(1.1)
+</style>

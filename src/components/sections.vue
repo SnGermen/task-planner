@@ -22,7 +22,7 @@
         Add Task
       </button>
 
-      <ModalAdd v-if="showModal" @close="toggleModal" />
+      <ModalAdd v-if="showModal" @close="toggleModal"  />
 
       <div class="wrapper__header">
         <SearchTags />
@@ -33,14 +33,17 @@
     <div class="pomodoro">
       <button
         class="pomodoro__button"
+        
         @click="togglePomodoro"
-        :class="{ 'pomodoro__button_open': isPomodoroOpen }"
+        :class="{ 'pomodoro__button_open': isPomodoroOpen, 
+        'pomodoro__button_active': isRunning }"
       >
         🍅
       </button>
 
       <!-- Pomodoro Timer Component -->
-      <PomodoroTimer v-if="isPomodoroOpen" @close="isPomodoroOpen = false" />
+      <PomodoroTimer v-if="isPomodoroOpen" @close="isPomodoroOpen = false"
+       @statusOfTheTimer = "handlePomodoroStatus"/>
       
     </div>
   </div>
@@ -60,7 +63,7 @@ import PomodoroTimer from "../views/Pomodora.vue"
 const modalsStore = useModalsStore()
 const activePageStore = useActivePageStore()
 const { activePage } = storeToRefs(activePageStore)
-
+const isRunning = ref(false)
 const showModal = ref(false)
 const isPomodoroOpen = ref(false)
 
@@ -70,6 +73,9 @@ function togglePomodoro() {
 
 function toggleModal() {
   showModal.value = !showModal.value
+}
+function handlePomodoroStatus(status){
+  isRunning.value = status
 }
 
 const goToSection = (key) => {
@@ -168,6 +174,9 @@ onMounted(() => {
 
     &_open
       background-color: #f44336
+    &_active
+      background-color: green
+      
 
 
 </style>

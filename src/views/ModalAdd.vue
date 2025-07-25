@@ -43,7 +43,7 @@ const emit = defineEmits(['close'])
 const { activePage } = storeToRefs(activePageStore)
 
 function submitTask() {
-  if (title.value && description.value) {
+  if (title.value ) {
     modalsStore.addTheDatestoTheStorage({
       title: title.value,
       description: description.value,
