@@ -3,16 +3,31 @@
     <nav class="wrapper__menu">
       <div class="logo">Germen</div>
       <a
-        v-for="section in sections"
+      
+        v-for="section in onlyOldSections"
         :key="`menu-${section.key}`"
-        class="wrapper__menu-item"
+        class="wrapper__menu_item"
         @click.prevent="goToSection(section.key)"
       >
-        {{ section.title }}
-      </a>
+        {{ section.title }} 
+
+      </a> 
+      <NewProject/>
+      <a
+      
+        v-for="section in onlyNewSections"
+        :key="`menu-${section.key}`"
+        class="wrapper__menu_newItem"
+        @click.prevent="goToSection(section.key)"
+      >
+       <span class="wrapper__text_new"> {{ section.title }} </span>
+
+      </a> 
     </nav>
+
     <div class="wrapper__content">
-      <h1 class="wrapper__title">{{ getActiveSection?.title }}</h1>
+      <input  v-if="activeSection?.isNew" type="text" class="wrapper__title" v-model="getActiveSectionTitle">
+      <div v-else class="wrapper__title">{{ activeSection?.title }}</div>
       <button
         v-if="isAddButtonVisible"
         class="wrapper__add-button"
@@ -23,7 +38,6 @@
       <ModalAdd v-if="showModal" @close="toggleModal"  />
       <div class="wrapper__header">
         <SearchTags />
-        <br />
         <AddTaskForm />
       </div>
     </div>
@@ -51,6 +65,7 @@ import ModalAdd from "../views/ModalAdd.vue"
 import AddTaskForm from "../views/AddTaskForm.vue"
 import SearchTags from "../views/SearchTags.vue"
 import PomodoroTimer from "../views/Pomodora.vue" 
+import NewProject from "../views/NewProject.vue"
 
 const modalsStore = useModalsStore()
 const activePageStore = useActivePageStore()
@@ -58,6 +73,17 @@ const { activePage } = storeToRefs(activePageStore)
 const isRunning = ref(false)
 const showModal = ref(false)
 const isPomodoroOpen = ref(false)
+
+
+const onlyOldSections = computed(()=>{
+  return sections.value.filter(sec=> sec.isNew === false)
+})
+const onlyNewSections = computed(()=>{
+  return sections.value.filter(sec=> sec.isNew === true)
+})
+const activeSection  = computed(()=>{
+  return sections.value.find(sec => sec.key === activePage.value)
+})
 
 function togglePomodoro() {
   isPomodoroOpen.value = !isPomodoroOpen.value
@@ -74,16 +100,23 @@ const goToSection = (key) => {
   activePageStore.setActivePage(key)
 }
 
-const getActiveSection = computed(() =>
-  sections.find((e) => e.key === activePage.value)
-)
-
+const getActiveSectionTitle = computed({
+  get(){
+    return sections.value.find(section => section.key === activePage.value)?.title || ''
+  },
+  set(newTitle){
+    const section = sections.value.find(section => section.key === activePage.value)
+    if (section) {
+      section.title = newTitle
+    }
+  }
+})
 const isAddButtonVisible = computed(() =>
-  sections.find((e) => e.key === activePage.value)?.isShowAddTaskButton
+  sections.value.find((e) => e.key === activePage.value)?.isShowAddTaskButton
 )
 
 onMounted(() => {
-  activePageStore.setActivePage(sections[0].key)
+  activePageStore.setActivePage(sections.value[0].key)
 })
 </script>
 
@@ -111,7 +144,7 @@ onMounted(() => {
     box-shadow: 2px 0 10px rgba(0, 0, 0, 0.2)
     overflow-x: auto
 
-    &-item
+    &_item
       font-size: 18px
       color: #e0e0e0
       text-decoration: none
@@ -124,6 +157,24 @@ onMounted(() => {
       &:hover
         background-color: #2a2a2a
         transform: scale(1.05)
+    &_newItem
+      font-size: 18px
+      color: #e0e0e0
+      text-decoration: none
+      padding: 0.75rem 1rem
+      border-radius: 10px
+      transition: background-color 0.2s ease, transform 0.2s ease
+      cursor: pointer
+      max-width: 100%
+      &:hover
+        background-color: #2a2a2a
+        transform: scale(1.05)
+    &__text_new
+        display: block
+        white-space: nowrap
+        overflow: hidden
+        text-overflow: ellipsis
+        max-width: 100%
 
   &__content
     padding: 1.5rem
@@ -134,8 +185,17 @@ onMounted(() => {
   &__title
     font-size: 24px
     margin-bottom: 1rem
+    padding: 0.5rem 1rem
+    height: auto
+    background-color: #2a2a2a
+    border: none
+    border-radius: 8px
+    color: #fff
+    width: 100%
     max-width: 100%
-    overflow-wrap: break-word
+    white-space: nowrap
+    overflow: hidden
+    text-overflow: ellipsis
 
   &__add-button
     background-color: #444
@@ -177,9 +237,7 @@ onMounted(() => {
     &_active
       background-color: green
 
-// === Медиазапросы ===
 
-// 💥 Минимум: экраны до 260px
 @media (max-width: 260px)
   .wrapper
     grid-template-columns: 1fr
@@ -196,7 +254,7 @@ onMounted(() => {
     z-index: 1000
   .wrapper__content
     margin-top: 50px
-  .wrapper__menu-item
+  .wrapper__menu_item
     font-size: 12px
     padding: 0.25rem
 
@@ -204,8 +262,11 @@ onMounted(() => {
 @media (min-width: 360px) and (max-width: 699px)
   .wrapper
     grid-template-columns: 120px 1fr
+    &__menu_item
+      font-size: 15px
+    &__menu_newItem
+      font-size: 15px
 
-// От 700 до 899
 @media (min-width: 700px) and (max-width: 899px)
   .wrapper
     grid-template-columns: 120px 1fr

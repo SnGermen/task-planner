@@ -84,6 +84,7 @@ async function moveToTrash(taskId) {
   }
 }
 
+
 async function restoreTask(taskId) {
   const task = modalDates.value.find(t => t.id === taskId)
   if (!task || task.category !== "trash") return
@@ -213,7 +214,7 @@ async function moveToDone(taskId, isDone) {
       height: 18px
     &__actions
       gap: 0px
-      right: -9px
+      right: -4px
     &__tags
       max-width: 85%
       font-size: 14px
@@ -230,7 +231,7 @@ async function moveToDone(taskId, isDone) {
       height: 20px
     &__actions
       gap: 5px
-      right: -5px
+      right: -4px
     &__tags
       max-width: 85%
 @media (min-width: 700px) and (max-width: 899px)

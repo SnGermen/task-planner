@@ -63,7 +63,7 @@ const description = ref('')
 const originTags = ref('')
 const sectionSelected = ref('')
 const filteredSections = computed(()=>{
-  return sections.filter(section => section.key !== 'trash' && section.key !== 'done')
+  return sections.value.filter(section => section.key !== 'trash' && section.key !== 'done')
 })
 watch(() => props.task, (t) => {
   if (t) {
