@@ -2,11 +2,12 @@
   <div class="wrapper">
     <nav class="wrapper__menu">
       <div class="logo">Germen</div>
-      <a
+      <a 
         v-for="section in onlyOldSections"
         :key="`menu-${section.key}`"
         class="wrapper__menu_item"
         @click.prevent="goToSection(section.key)"
+        :class="{active: section.key == activePage}"
       >
         {{ section.title }}
       </a> 
@@ -16,6 +17,7 @@
         :key="`menu-${section.key}`"
         class="wrapper__menu_newItem"
         @click.prevent="goToSection(section.key)"
+        :class="{active: section.key == activePage}"
       >
       <button class="wrapper__delete" @click="projectStore.removeProject(section.key) ">❌</button>
        <span class="wrapper__text_new"> {{ section.title }} </span>
@@ -183,6 +185,12 @@ html, body
       overflow: hidden
       text-overflow: ellipsis
       max-width: 100%
+      &.active
+        background-color: #f39c12  // ярко-жёлтый, можно поменять под твой вкус
+        color: #121212            // текст контрастный, чтобы читался на жёлтом фоне
+        font-weight: 700       
+  
+      
 
       &:hover
         background-color: #2a2a2a
