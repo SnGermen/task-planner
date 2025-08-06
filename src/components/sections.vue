@@ -3,31 +3,34 @@
     <nav class="wrapper__menu">
       <div class="logo">Germen</div>
       <a
-      
         v-for="section in onlyOldSections"
         :key="`menu-${section.key}`"
         class="wrapper__menu_item"
         @click.prevent="goToSection(section.key)"
       >
-        {{ section.title }} 
-
+        {{ section.title }}
       </a> 
       <NewProject/>
       <a
-      
         v-for="section in onlyNewSections"
         :key="`menu-${section.key}`"
         class="wrapper__menu_newItem"
         @click.prevent="goToSection(section.key)"
       >
+      <button class="wrapper__delete" @click="projectStore.removeProject(section.key) ">❌</button>
        <span class="wrapper__text_new"> {{ section.title }} </span>
-
       </a> 
     </nav>
 
     <div class="wrapper__content">
-      <input  v-if="activeSection?.isNew" type="text" class="wrapper__title" v-model="getActiveSectionTitle">
+      <input  
+        v-if="activeSection?.isNew" 
+        type="text" 
+        class="wrapper__title" 
+        v-model="getActiveSectionTitle"
+      >
       <div v-else class="wrapper__title">{{ activeSection?.title }}</div>
+
       <button
         v-if="isAddButtonVisible"
         class="wrapper__add-button"
@@ -35,53 +38,63 @@
       >
         Add Task
       </button>
-      <ModalAdd v-if="showModal" @close="toggleModal"  />
+      <ModalAdd v-if="showModal" @close="toggleModal" />
+      
       <div class="wrapper__header">
         <SearchTags />
         <AddTaskForm />
       </div>
     </div>
+
     <div class="pomodoro">
       <button
         class="pomodoro__button"
         @click="togglePomodoro"
-        :class="{ 'pomodoro__button_open': isPomodoroOpen, 
-        'pomodoro__button_active': isRunning }">
-        🍅
+        :class="{ 
+          'pomodoro__button_open': isPomodoroOpen, 
+          'pomodoro__button_active': isRunning 
+        }"
+      >
+        {{ isRunning ? formattedTime : "🍅" }}
       </button>
-      <PomodoroTimer v-if="isPomodoroOpen" @close="isPomodoroOpen = false"
-       @statusOfTheTimer = "handlePomodoroStatus"/>     
+      <PomodoroTimer 
+        v-if="isPomodoroOpen" 
+        @close="isPomodoroOpen = false"
+        @statusOfTheTimer="handlePomodoroStatus"
+      />     
     </div>
   </div>
 </template>
 
 <script setup>
 import { ref, computed, onMounted } from "vue"
-import { useModalsStore } from "../stores/ModalsDate"
 import { storeToRefs } from "pinia"
 import { sections } from "../data/sections.js"
 import { useActivePageStore } from "../stores/activePage.js"
 import ModalAdd from "../views/ModalAdd.vue"
 import AddTaskForm from "../views/AddTaskForm.vue"
 import SearchTags from "../views/SearchTags.vue"
-import PomodoroTimer from "../views/Pomodora.vue" 
+import PomodoroTimer from "../views/Pomodoro.vue" 
 import NewProject from "../views/NewProject.vue"
+import { usePomodoro } from "../stores/pomodoro.js" 
+import { useProjectStore } from "../stores/ProjectsDate.js"
+import { deleteProject } from "../data/db.js"
 
-const modalsStore = useModalsStore()
 const activePageStore = useActivePageStore()
+const pomodoro = usePomodoro()
 const { activePage } = storeToRefs(activePageStore)
-const isRunning = ref(false)
 const showModal = ref(false)
 const isPomodoroOpen = ref(false)
+const { formattedTime, isRunning } = storeToRefs(pomodoro)
+const projectStore = useProjectStore()
 
-
-const onlyOldSections = computed(()=>{
-  return sections.value.filter(sec=> sec.isNew === false)
+const onlyOldSections = computed(() => {
+  return sections.value.filter(sec => !sec.isNew)
 })
-const onlyNewSections = computed(()=>{
-  return sections.value.filter(sec=> sec.isNew === true)
+const onlyNewSections = computed(() => {
+  return sections.value.filter(sec => sec.isNew)
 })
-const activeSection  = computed(()=>{
+const activeSection  = computed(() => {
   return sections.value.find(sec => sec.key === activePage.value)
 })
 
@@ -92,6 +105,7 @@ function togglePomodoro() {
 function toggleModal() {
   showModal.value = !showModal.value
 }
+
 function handlePomodoroStatus(status){
   isRunning.value = status
 }
@@ -101,19 +115,22 @@ const goToSection = (key) => {
 }
 
 const getActiveSectionTitle = computed({
-  get(){
+  get() {
     return sections.value.find(section => section.key === activePage.value)?.title || ''
   },
-  set(newTitle){
-    const section = sections.value.find(section => section.key === activePage.value)
-    if (section) {
-      section.title = newTitle
-    }
+  set(newTitle) {
+     projectStore.setNameOfTitle(activePage.value, newTitle)
+
   }
 })
+
 const isAddButtonVisible = computed(() =>
-  sections.value.find((e) => e.key === activePage.value)?.isShowAddTaskButton
+  sections.value.find(e => e.key === activePage.value)?.isShowAddTaskButton
 )
+
+async function handleDeleteProject(projectId) {
+  await deleteProject(projectId)
+}
 
 onMounted(() => {
   activePageStore.setActivePage(sections.value[0].key)
@@ -121,6 +138,10 @@ onMounted(() => {
 </script>
 
 <style lang="sass" scoped>
+html, body
+  overflow-x: hidden 
+  overflow-y: auto
+
 .logo
   color: gray
   font-weight: 600
@@ -134,7 +155,13 @@ onMounted(() => {
   height: 100vh
   background: #121212
   color: #e0e0e0
-
+  overflow-x: hidden
+  &__delete
+    background: none
+    border: none
+    font-size: 20px
+    cursor: pointer
+    padding-left: opx 
   &__menu
     display: flex
     flex-direction: column
@@ -142,21 +169,8 @@ onMounted(() => {
     padding: 2rem 1rem
     background-color: #1c1c1c
     box-shadow: 2px 0 10px rgba(0, 0, 0, 0.2)
-    overflow-x: auto
 
-    &_item
-      font-size: 18px
-      color: #e0e0e0
-      text-decoration: none
-      padding: 0.75rem 1rem
-      border-radius: 10px
-      transition: background-color 0.2s ease, transform 0.2s ease
-      cursor: pointer
-      white-space: nowrap
-
-      &:hover
-        background-color: #2a2a2a
-        transform: scale(1.05)
+    &_item,
     &_newItem
       font-size: 18px
       color: #e0e0e0
@@ -165,28 +179,33 @@ onMounted(() => {
       border-radius: 10px
       transition: background-color 0.2s ease, transform 0.2s ease
       cursor: pointer
+      white-space: nowrap
+      overflow: hidden
+      text-overflow: ellipsis
       max-width: 100%
+
       &:hover
         background-color: #2a2a2a
         transform: scale(1.05)
+
     &__text_new
-        display: block
-        white-space: nowrap
-        overflow: hidden
-        text-overflow: ellipsis
-        max-width: 100%
+      display: block
+      white-space: nowrap
+      overflow: hidden
+      text-overflow: ellipsis
+      max-width: 100%
 
   &__content
     padding: 1.5rem
     background: #181818
     overflow-y: auto
+    overflow-x: hidden
     min-width: 0
 
   &__title
     font-size: 24px
     margin-bottom: 1rem
     padding: 0.5rem 1rem
-    height: auto
     background-color: #2a2a2a
     border: none
     border-radius: 8px
@@ -196,6 +215,7 @@ onMounted(() => {
     white-space: nowrap
     overflow: hidden
     text-overflow: ellipsis
+    height: auto
 
   &__add-button
     background-color: #444
@@ -236,7 +256,8 @@ onMounted(() => {
       background-color: #f44336
     &_active
       background-color: green
-
+      font-size: 15px
+      font-weight: 700
 
 @media (max-width: 260px)
   .wrapper
@@ -258,7 +279,6 @@ onMounted(() => {
     font-size: 12px
     padding: 0.25rem
 
-
 @media (min-width: 360px) and (max-width: 699px)
   .wrapper
     grid-template-columns: 120px 1fr
@@ -271,13 +291,11 @@ onMounted(() => {
   .wrapper
     grid-template-columns: 120px 1fr
 
-
 @media (min-width: 900px) and (max-width: 1199px)
   .wrapper
     grid-template-columns: 200px 1fr
+
 @media (min-width: 1200px) and (max-width: 1399px)
   .wrapper
     grid-template-columns: 250px 1fr
-
 </style>
-v

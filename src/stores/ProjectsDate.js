@@ -1,7 +1,6 @@
 import { defineStore } from "pinia"
-import { ref, computed } from "vue"
-import { saveNewProject } from "../data/db"
 import { sections } from "../data/sections"
+import { saveNewProject, updateProject, deleteProject } from "../data/db"
 
 export const useProjectStore = defineStore("projectStore", () => {
   async function createNewProject() {
@@ -16,7 +15,25 @@ export const useProjectStore = defineStore("projectStore", () => {
     await saveNewProject(newProject)
   }
 
+  async function setNameOfTitle(projectKey, newName) {
+    const project = sections.value.find((p) => p.key === projectKey)
+    if (project) {
+      project.title = newName
+      await updateProject(projectKey, { title: newName })
+    }
+  }
+
+  async function removeProject(projectKey) {
+    const index = sections.value.findIndex((p) => p.key == projectKey)
+    if (index !== -1) {
+      sections.value.splice(index, 1)
+    }
+    await deleteProject(projectKey)
+  }
+
   return {
     createNewProject,
+    setNameOfTitle,
+    removeProject,
   }
 })

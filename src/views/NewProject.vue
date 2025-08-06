@@ -7,13 +7,14 @@
 import { ref, computed, onMounted } from 'vue'
 import { useModalsStore } from '../stores/ModalsDate'
 import { sections } from "../data/sections"
-import {saveNewProject, loadProjects} from '../data/db'
+import {saveNewProject, loadProjects, deleteProject} from '../data/db'
 import { useProjectStore } from "../stores/ProjectsDate"
 import { storeToRefs } from "pinia"
 
 const projectStore = useProjectStore()
 const {createNewProject} = projectStore
 const modalsStore = useModalsStore()
+
 
 
 onMounted(async()=>{

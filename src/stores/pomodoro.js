@@ -2,13 +2,14 @@ import { ref, computed } from "vue"
 import { defineStore } from "pinia"
 
 export const usePomodoro = defineStore("pomodoro", () => {
-  const timeWork = ref(25 * 60) // добавлено
+  const timeWork = ref(25 * 60)
   const minBreak = ref(5 * 60)
   const longBreak = ref(15 * 60)
   const timer = ref(timeWork.value)
   const phase = ref("work")
   const cycleOfPomodoro = ref(0)
   const isRunning = ref(false)
+  const cyclesBeforeLongBreak = ref(4)
 
   let intervalId = null
 
@@ -24,11 +25,19 @@ export const usePomodoro = defineStore("pomodoro", () => {
   function setTime() {
     if (timer.value > 0) {
       timer.value--
-    } else if (phase.value === "work") {
+      return
+    }
+    if (phase.value === "work") {
       cycleOfPomodoro.value++
-      phase.value = cycleOfPomodoro.value % 4 === 0 ? "longBreak" : "break"
-      timer.value =
-        phase.value === "longBreak" ? longBreak.value : minBreak.value
+
+      if (cycleOfPomodoro.value >= cyclesBeforeLongBreak.value) {
+        phase.value = "longBreak"
+        timer.value = longBreak.value
+        cycleOfPomodoro.value = 0
+      } else {
+        phase.value = "break"
+        timer.value = minBreak.value
+      }
     } else {
       phase.value = "work"
       timer.value = timeWork.value
@@ -68,5 +77,6 @@ export const usePomodoro = defineStore("pomodoro", () => {
     startTimer,
     pauseTimer,
     resetTimer,
+    cyclesBeforeLongBreak,
   }
 })

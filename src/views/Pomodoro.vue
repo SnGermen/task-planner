@@ -2,22 +2,13 @@
   <div class="pomodoro">
     <div class="pomodoro_box">
       <div class="pomodoro_buttons">
+        <button class="pomodoro_settings" @click="toggleSettings">⚙️</button>
         <button class="pomodoro_unshow" @click="hidePomodoro">➖</button>
         <button class="pomodoro_close" @click="closeModal">❌</button>
       </div>
       <h1 class="pomodoro_title">Pomodoro</h1>
       <div class="pomodoro_content">
         <div class="pomodoro_phase">{{ phase }}</div>
-        <div class="pomodoro_time">
-          <button class="pomodoro_timeButton" @click="setCustomTime(5)">5</button>
-          <button class="pomodoro_timeButton" @click="setCustomTime(10)">10</button>
-          <button class="pomodoro_timeButton" @click="setCustomTime(15)">15</button>
-          <button class="pomodoro_timeButton" @click="setCustomTime(20)">20</button>
-          <button class="pomodoro_timeButton" @click="setCustomTime(25)">25</button>
-          <button class="pomodoro_timeButton" @click="setCustomTime(30)">30</button>
-          <button class="pomodoro_timeButton" @click="setCustomTime(45)">45</button>
-          <button class="pomodoro_timeButton" @click="setCustomTime(60)">60</button>
-        </div>
         <div class="pomodoro_timer">{{ formattedTime }}</div>
         <div class="pomodoro_buttons">
           <button class="pomodoro_controls" @click="toggleTimer">
@@ -31,14 +22,22 @@
           🍅Cycles completed: {{ cycleOfPomodoro }}
         </div>
       </div>
+      
+
     </div>
-  </div>
+    <SettingsOfPomodoro v-show="isSettingsOpen" @close="isSettingsOpen =false"/>
+  </div>          
+
 </template>
 <script setup>
 import { storeToRefs } from 'pinia'
 import { usePomodoro } from '@/stores/pomodoro'
+import SettingsOfPomodoro from "./SettingsOfPomodoro.vue"
+import { ref } from "vue"
 const emit = defineEmits(['close', 'statusOfTheTimer'])
 const pomodoro = usePomodoro()
+const isSettingsOpen = ref(false)
+
 const {
   phase,
   isRunning,
@@ -53,7 +52,6 @@ const {
   pauseTimer,
   startTimer,
 } = pomodoro
-
 
 function closeModal() {
   pauseTimer()
@@ -84,6 +82,10 @@ function hidePomodoro() {
       pauseTimer()
       emit('statusOfTheTimer', isRunning.value)
     }
+  }
+  function toggleSettings(){
+  isSettingsOpen.value = !isSettingsOpen.value
+  pomodoro.pauseTimer()
   }
 </script>
 
@@ -139,30 +141,6 @@ function hidePomodoro() {
     font-size: 50px
     font-weight: bold
     color: #f39c12
-
-  &_time
-    display: flex
-    flex-wrap: wrap
-    gap: 7px
-    justify-content: center
-    width: 100%
-
-  &_timeButton
-    background-color: #3e3e3e
-    color: #fff
-    border: none
-    border-radius: 8px
-    padding: 6px 12px
-    font-size: 16px
-    cursor: pointer
-    transition: all 0.3s ease
-    &:hover
-      background-color: #f39c12
-      color: #000
-      transform: scale(1.05)
-    &:active
-      transform: scale(0.95)
-
   &_controls
     font-size: 18px
     padding: 10px 20px
@@ -182,7 +160,8 @@ function hidePomodoro() {
       background-color: #c0392b
 
   &_close,
-  &_unshow
+  &_unshow,
+  &_settings
     position: absolute
     top: 10px
     font-size: 20px
@@ -196,6 +175,9 @@ function hidePomodoro() {
 
   &_close
     right: 10px
+  &_settings
+    left: 10px
+
 
   &_unshow
     right: 50px

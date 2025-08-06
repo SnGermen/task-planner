@@ -16,7 +16,14 @@
     <div class="task__text">
       <div class="task__title">{{ task.title }}</div>
       <div class="task__description">{{ task.description }}</div>
-      <div v-if="task.tags" class="task__tags">{{ task.tags }}</div>
+      <div v-if="task.tags" class="task__tags">
+        <a v-for="tag in filteredTags(task.tags)"
+        key="tag"
+        class="task__links" 
+        @click="filterByTad(tag)">
+         {{ tag }}
+      </a>
+    </div>
     </div>
     <div class="task__actions">
       <button v-if="task.category !=='trash'" class="task__btn" @click="toggleConfig(task)">⚙️</button>
@@ -51,6 +58,7 @@ const { saveTags } = storeToRefs(tagsStore)
 const modalConfig  = ref(false)
 const selectedTask = ref(null)
 
+
 const filter = computed(() => {
   return modalDates.value.filter(task => {
     const categoryMatch = task.category == activePage.value
@@ -63,6 +71,7 @@ const filter = computed(() => {
     return categoryMatch && tagMatch
   })
 })
+
 
 function toggleConfig(task) {
   selectedTask.value = task
@@ -83,7 +92,19 @@ async function moveToTrash(taskId) {
     await saveTask({ ...task })
   }
 }
+function filterByTad(tag){
+  saveTags.value = tag
+}
 
+function filteredTags(tags){
+  if (!tags) return []
+  return[ ...new Set(
+    tags
+      .trim()
+      .split(/\s+/) 
+      .map(tag => tag.startsWith('#') ? tag : '#' + tag)
+  )]
+}
 
 async function restoreTask(taskId) {
   const task = modalDates.value.find(t => t.id === taskId)
@@ -165,6 +186,19 @@ async function moveToDone(taskId, isDone) {
     word-break: break-word
     overflow-wrap: break-word
     white-space: normal
+  &__links
+    background: #2c2c2c
+    color: white
+    padding: 3px 8px
+    border-radius: 6px
+    font-size: 14px
+    margin: 2px
+    cursor: pointer
+    text-decoration: none
+
+    &:hover
+      background: #f39c12
+
   &__title
     font-size: 30px
     font-weight: 600
