@@ -1,8 +1,16 @@
 import { defineStore } from "pinia"
 import { sections } from "../data/sections"
 import { saveNewProject, updateProject, deleteProject } from "../data/db"
+import { ref, computed } from "vue"
 
 export const useProjectStore = defineStore("projectStore", () => {
+  const onlyOldSections = computed(() => {
+    return sections.value.filter((sec) => !sec.isNew)
+  })
+  const onlyNewSections = computed(() => {
+    return sections.value.filter((sec) => sec.isNew && !sec.isTrashed)
+  })
+
   async function createNewProject() {
     const newProject = {
       title: "New Project",
@@ -10,6 +18,8 @@ export const useProjectStore = defineStore("projectStore", () => {
       icon: "📁",
       isShowAddTaskButton: true,
       isNew: true,
+      isTrashed: false,
+      category: "project",
     }
     sections.value.push(newProject)
     await saveNewProject(newProject)
@@ -31,9 +41,34 @@ export const useProjectStore = defineStore("projectStore", () => {
     await deleteProject(projectKey)
   }
 
+  async function moveProjectToTheTrash(projectKey) {
+    const project = sections.value.find((p) => p.key === projectKey)
+    if (!project) return
+    project.category = "trash"
+    project.isTrashed = true
+    await updateProject(projectKey, {
+      isTrashed: true,
+      category: "trash",
+    })
+  }
+
+  async function restoreProjectT(projectKey) {
+    const project = sections.value.find((p) => p.key === projectKey)
+    if (!project || project.category !== "trash") return
+    project.category = "project"
+    project.isTrashed = false
+    await updateProject(projectKey, {
+      isTrashed: true,
+      category: "project",
+    })
+  }
   return {
     createNewProject,
     setNameOfTitle,
     removeProject,
+    moveProjectToTheTrash,
+    restoreProjectT,
+    onlyOldSections,
+    onlyNewSections,
   }
 })

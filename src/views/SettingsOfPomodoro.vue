@@ -25,6 +25,10 @@
           <div class="settings_text">Long break every</div>
           <input class="settings_number" type="number" v-model="howMuchCyclesBeforeTheLongRest" />
         </div>
+        <div class="settings_booleanDates">
+          <input class="settings_checkbox" type="checkbox" v-model="autoStartNextPeriodComputed">           
+          <div class="settings_text">Automatically start next period</div>
+        </div>
       </div>
     </div>
   </div>
@@ -34,6 +38,7 @@
 import { usePomodoro } from "../stores/pomodoro";
 import { storeToRefs } from "pinia";
 import { computed } from "vue";
+import { updatePomodoroState } from "../data/db"
 
 const emit = defineEmits(["close"]);
 
@@ -41,6 +46,7 @@ function closeSettings() {
   emit("close");
 }
 
+const {autoStartNextPeriod} = storeToRefs(usePomodoro())
 const pomodoro = usePomodoro();
 const { timeWork, minBreak, longBreak, cyclesBeforeLongBreak, phase, timer } =
   storeToRefs(pomodoro);
@@ -48,7 +54,7 @@ const { timeWork, minBreak, longBreak, cyclesBeforeLongBreak, phase, timer } =
 const timeWorkMinutes = computed({
   get: () => Math.floor(timeWork.value / 60),
   set: (val) => {
-    const safeVal = Math.max(1, Number(val) || 1); // минимум 1 минута
+    const safeVal = Math.max(1, Number(val) || 1); 
     timeWork.value = safeVal * 60;
     if (phase.value === "work") {
       timer.value = timeWork.value;
@@ -56,10 +62,18 @@ const timeWorkMinutes = computed({
   },
 });
 
+const autoStartNextPeriodComputed =computed({
+  get: ()=> autoStartNextPeriod.value,
+  set: (val)=> {
+    autoStartNextPeriod.value = val
+    updatePomodoroState({ id: 1, autoStartNextPeriod: val });
+  }
+})
+
 const minBreakMinutes = computed({
   get: () => Math.floor(minBreak.value / 60),
   set: (val) => {
-    const safeVal = Math.max(1, Number(val) || 1); // минимум 1 минута
+    const safeVal = Math.max(1, Number(val) || 1); 
     minBreak.value = safeVal * 60;
     if (phase.value === "break") {
       timer.value = minBreak.value;
@@ -70,7 +84,7 @@ const minBreakMinutes = computed({
 const longBreaMinutes = computed({
   get: () => Math.floor(longBreak.value / 60),
   set: (val) => {
-    const safeVal = Math.max(1, Number(val) || 1); // минимум 1 минута
+    const safeVal = Math.max(1, Number(val) || 1);
     longBreak.value = safeVal * 60;
     if (phase.value === "longBreak") {
       timer.value = longBreak.value;
@@ -81,7 +95,7 @@ const longBreaMinutes = computed({
 const howMuchCyclesBeforeTheLongRest = computed({
   get: () => cyclesBeforeLongBreak.value,
   set: (val) => {
-    const safeVal = Math.max(2, Number(val) || 1); // минимум 1 цикл
+    const safeVal = Math.max(2, Number(val) || 1); 
     cyclesBeforeLongBreak.value = safeVal;
   },
 });
@@ -136,6 +150,31 @@ const howMuchCyclesBeforeTheLongRest = computed({
     display: flex
     justify-content: space-between
     align-items: center
+
+  &_booleanDates
+    display: flex
+  &_checkbox
+    min-width: 20px
+    height: 20px
+    margin-right: 18px
+    border: 2px solid white
+    border-radius: 6px
+    background: transparent
+    appearance: none
+    display: flex
+    align-items: center
+    justify-content: center
+    cursor: pointer
+    &:checked
+      background-color: #f1c40f
+      border-color: #f1c40f
+      &::after
+        content: ""
+        width: 6px
+        height: 10px
+        border: solid white
+        border-width: 0 2px 2px 0
+        transform: rotate(45deg)
 
   &_text
     font-size: 15px

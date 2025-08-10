@@ -47,6 +47,7 @@ import { saveTask } from '../data/db'
 import { storeOfTags } from "../stores/SearchTags"
 import { deleteTask } from '../data/db'
 import ConfigurateTheTask from "../views/ConfigurateTheTask.vue"
+import {useProjectStore} from "../stores/ProjectsDate"
 
 const modalsStore = useModalsStore()
 const activePageStore = useActivePageStore()
@@ -54,6 +55,7 @@ const tagsStore = storeOfTags()
 const { modalDates } = storeToRefs(modalsStore)
 const { activePage } = storeToRefs(activePageStore)
 const { saveTags } = storeToRefs(tagsStore)
+const {onlyNewSections} = storeToRefs(useProjectStore())
 
 const modalConfig  = ref(false)
 const selectedTask = ref(null)
@@ -85,6 +87,15 @@ async function moveToTrash(taskId) {
     modalDates.value = modalDates.value.filter(t => t.id !== taskId)
     return
   }
+  if (task) {
+    task.originCategory = task.category 
+    task.isTrashed = true
+    task.category = "trash"
+    await saveTask({ ...task })
+  }
+}
+async function moveProjectToTrash([rojectKey]) {
+  const task = modalDates.value.find(t => t.id === taskId)
   if (task) {
     task.originCategory = task.category 
     task.isTrashed = true

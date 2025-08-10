@@ -1,5 +1,6 @@
 import { ref, computed } from "vue"
 import { defineStore } from "pinia"
+import { loadPomodoroState, updatePomodoroState } from "../data/db"
 
 export const usePomodoro = defineStore("pomodoro", () => {
   const timeWork = ref(25 * 60)
@@ -10,8 +11,18 @@ export const usePomodoro = defineStore("pomodoro", () => {
   const cycleOfPomodoro = ref(0)
   const isRunning = ref(false)
   const cyclesBeforeLongBreak = ref(4)
-
+  const autoStartNextPeriod = ref(false)
   let intervalId = null
+  loadPomodoroState().then((state) => {
+    if (state && typeof state.autoStartNextPeriod === "boolean") {
+      autoStartNextPeriod.value = state.autoStartNextPeriod
+    } else {
+      updatePomodoroState({
+        id: 1,
+        autoStartNextPeriod: autoStartNextPeriod.value,
+      })
+    }
+  })
 
   const formattedTime = computed(() => {
     const minutes = Math.floor(timer.value / 60)
@@ -41,6 +52,9 @@ export const usePomodoro = defineStore("pomodoro", () => {
     } else {
       phase.value = "work"
       timer.value = timeWork.value
+    }
+    if (autoStartNextPeriod.value == false && phase.value === "work") {
+      pauseTimer()
     }
   }
 
@@ -78,5 +92,6 @@ export const usePomodoro = defineStore("pomodoro", () => {
     pauseTimer,
     resetTimer,
     cyclesBeforeLongBreak,
+    autoStartNextPeriod,
   }
 })

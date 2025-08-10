@@ -19,7 +19,8 @@
         @click.prevent="goToSection(section.key)"
         :class="{active: section.key == activePage}"
       >
-      <button class="wrapper__delete" @click="projectStore.removeProject(section.key) ">❌</button>
+      <button class="wrapper__delete" @click="projectStore.moveProjectToTheTrash(section.key) ">❌</button>
+      <!-- <button class="wrapper__delete" @click="projectStore.removeProject(section.key) ">❌</button> -->
        <span class="wrapper__text_new"> {{ section.title }} </span>
       </a> 
     </nav>
@@ -79,8 +80,8 @@ import SearchTags from "../views/SearchTags.vue"
 import PomodoroTimer from "../views/Pomodoro.vue" 
 import NewProject from "../views/NewProject.vue"
 import { usePomodoro } from "../stores/pomodoro.js" 
-import { useProjectStore } from "../stores/ProjectsDate.js"
-import { deleteProject } from "../data/db.js"
+import { useProjectStore} from "../stores/ProjectsDate.js"
+import { deleteProject, saveNewProject} from "../data/db.js"
 
 const activePageStore = useActivePageStore()
 const pomodoro = usePomodoro()
@@ -89,13 +90,7 @@ const showModal = ref(false)
 const isPomodoroOpen = ref(false)
 const { formattedTime, isRunning } = storeToRefs(pomodoro)
 const projectStore = useProjectStore()
-
-const onlyOldSections = computed(() => {
-  return sections.value.filter(sec => !sec.isNew)
-})
-const onlyNewSections = computed(() => {
-  return sections.value.filter(sec => sec.isNew)
-})
+const {onlyNewSections, onlyOldSections} = storeToRefs(useProjectStore())
 const activeSection  = computed(() => {
   return sections.value.find(sec => sec.key === activePage.value)
 })
@@ -133,6 +128,7 @@ const isAddButtonVisible = computed(() =>
 async function handleDeleteProject(projectId) {
   await deleteProject(projectId)
 }
+
 
 onMounted(() => {
   activePageStore.setActivePage(sections.value[0].key)
@@ -186,8 +182,8 @@ html, body
       text-overflow: ellipsis
       max-width: 100%
       &.active
-        background-color: #f39c12  // ярко-жёлтый, можно поменять под твой вкус
-        color: #121212            // текст контрастный, чтобы читался на жёлтом фоне
+        background-color: #f39c12  
+        color: #121212            
         font-weight: 700       
   
       

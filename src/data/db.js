@@ -1,10 +1,16 @@
 export function openDB() {
   return new Promise((resolve, reject) => {
-    const request = indexedDB.open("TaskDB", 2)
+    const request = indexedDB.open("TaskDB", 1)
     request.onupgradeneeded = (event) => {
       const db = event.target.result
       if (!db.objectStoreNames.contains("tasks")) {
         db.createObjectStore("tasks", { keyPath: "id", autoIncrement: true })
+      }
+      if (!db.objectStoreNames.contains("pomodoro")) {
+        db.createObjectStore("pomodoro", {
+          keyPath: "id",
+          autoIncrement: true,
+        })
       }
       if (!db.objectStoreNames.contains("projects")) {
         db.createObjectStore("projects", {
@@ -109,6 +115,28 @@ export async function deleteProject(projectId) {
     const request = store.delete(projectId)
 
     request.onsuccess = () => resolve(true)
+    request.onerror = (e) => reject(e)
+  })
+}
+
+export async function updatePomodoroState(state) {
+  const db = await openDB()
+  const tx = db.transaction("pomodoro", "readwrite")
+  const store = tx.objectStore("pomodoro")
+  store.put(state)
+  return new Promise((resolve, reject) => {
+    tx.oncomplete = () => resolve(true)
+    tx.onerror = (e) => reject(e)
+  })
+}
+
+export async function loadPomodoroState() {
+  const db = await openDB()
+  const tx = db.transaction("pomodoro", "readonly")
+  const store = tx.objectStore("pomodoro")
+  return new Promise((resolve, reject) => {
+    const request = store.get(1)
+    request.onsuccess = () => resolve(request.result)
     request.onerror = (e) => reject(e)
   })
 }
