@@ -45,7 +45,7 @@
       
       <div class="wrapper__header">
         <SearchTags />
-        <AddTaskForm />
+        <AddTaskAndProjectForm />
       </div>
     </div>
 
@@ -75,7 +75,7 @@ import { storeToRefs } from "pinia"
 import { sections } from "../data/sections.js"
 import { useActivePageStore } from "../stores/activePage.js"
 import ModalAdd from "../views/ModalAdd.vue"
-import AddTaskForm from "../views/AddTaskForm.vue"
+import AddTaskAndProjectForm from "../views/AddTaskAndProjectForm.vue"
 import SearchTags from "../views/SearchTags.vue"
 import PomodoroTimer from "../views/Pomodoro.vue" 
 import NewProject from "../views/NewProject.vue"

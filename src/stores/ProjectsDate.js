@@ -50,6 +50,7 @@ export const useProjectStore = defineStore("projectStore", () => {
       isTrashed: true,
       category: "trash",
     })
+    console.log("trashed")
   }
 
   async function restoreProjectT(projectKey) {
