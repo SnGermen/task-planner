@@ -16,6 +16,15 @@
     <div class="task__text">
       <div class="task__title">{{ task.title }}</div>
       <div class="task__description">{{ task.description }}</div>
+      <a 
+        v-if="task.name && task.category == 'waiting'"
+        class="task__name"
+        @click="filterByName(task.name)"
+        >
+          👤{{ task.name }}
+      </a>
+
+      <a @click="goToProject(task.projectKey)" class="task__project"> {{title(task.projectKey)}}</a>
       <div v-if="task.tags" class="task__tags">
         <a v-for="tag in filteredTags(task.tags)"
         key="tag"
@@ -45,37 +54,61 @@ import { computed, ref } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useActivePageStore } from '../stores/activePage'
 import { saveTask } from '../data/db'
-import { storeOfTags } from "../stores/SearchTags"
+import { storeOfTags, storeOfName} from "../stores/SearchTagsOrName"
 import { deleteTask } from '../data/db'
 import ConfigurateTheTask from "../views/ConfigurateTheTask.vue"
 import {useProjectStore} from "../stores/ProjectsDate"
 import { sections } from "../data/sections"
 import AddProjectToTheTrash from "../views/AddProjectToTheTrash.vue"
 
+const projectStore = useProjectStore()
 const modalsStore = useModalsStore()
 const activePageStore = useActivePageStore()
 const tagsStore = storeOfTags()
+const nameStore = storeOfName()
 const { modalDates } = storeToRefs(modalsStore)
 const { activePage } = storeToRefs(activePageStore)
 const { saveTags } = storeToRefs(tagsStore)
-const {onlyNewSections} = storeToRefs(useProjectStore())
-
+const { saveName } = storeToRefs(nameStore)
 const modalConfig  = ref(false)
 const selectedTask = ref(null)
-  const onlyNewDelatedSections = computed(() => {
+
+function title(projectKey){
+  return projectStore.getProjectTitle(projectKey)
+}
+function goToProject(projectKey) {
+  const  project = sections.value.find(sec=> sec.key == projectKey)
+  if(project){
+    activePageStore.activePage = project.key
+  }
+}
+
+const onlyNewDelatedSections = computed(() => {
     return sections.value.filter((sec) => sec.isNew && sec.category == "trash")
   })
 
 const filter = computed(() => {
   return modalDates.value.filter(task => {
-    const categoryMatch = task.category == activePage.value
     const tagSearch = (saveTags.value || "").replace(/^#/, "")
     const tagMatch = saveTags.value
       ? (task.tags || "")
           .split(" ")
           .some(tag => tag.replace(/^#/, "").startsWith(tagSearch))
       : true
-    return categoryMatch && tagMatch
+    const nameSearch = saveName.value || ""
+    const nameMatch = saveName.value
+      ? (task.name || "").toLowerCase().includes(nameSearch.toLowerCase())
+      : true
+
+    if (sections.value.some(sec => sec.key === activePage.value && !sec.isNew)) {
+      return task.category === activePage.value && tagMatch && nameMatch
+    }
+
+    if (sections.value.some(sec => sec.key === activePage.value && sec.isNew)) {
+      return task.projectKey === activePage.value && tagMatch && nameMatch
+    }
+
+    return false
   })
 })
 
@@ -100,6 +133,14 @@ async function moveToTrash(taskId) {
     await saveTask({ ...task })
     
   }
+}
+function filterByTad(tag) {
+  const tagWithoutHash = tag.replace(/^#/, "")
+  saveTags.value = tagWithoutHash
+}
+
+function filterByName(name) {
+  saveName.value = name
 }
 
 function filteredTags(tags){
@@ -151,13 +192,23 @@ async function moveToDone(taskId, isDone) {
     border: 1px solid #444
     background-color: #1e1e1e
     overflow-wrap: break-word
+    transition: background-color 0.3s, box-shadow 0.3s
 
     &:hover
       background-color: #2a2a2a
+
   &__done
-      border-left: 4px solid #27ae60
+    border-left: 4px solid #27ae60
+    transition: background-color 0.3s, box-shadow 0.3s, border-color 0.3s
+
+    &:hover
+      background: linear-gradient(90deg, rgba(39, 174, 96, 0.15), #2a2a2a)
+      box-shadow: 0 0 15px rgba(39, 174, 96, 0.4)
+      border-left-color: #2ecc71
+
   &__trashed
-      border-left: 4px solid #e74c3c
+    border-left: 4px solid #e74c3c
+
   &__checkbox
     min-width: 22px
     height: 22px
@@ -170,9 +221,11 @@ async function moveToDone(taskId, isDone) {
     align-items: center
     justify-content: center
     cursor: pointer
+
     &:checked
       background-color: #f1c40f
       border-color: #f1c40f
+
       &::after
         content: ""
         width: 6px
@@ -180,18 +233,31 @@ async function moveToDone(taskId, isDone) {
         border: solid white
         border-width: 0 2px 2px 0
         transform: rotate(45deg)
+
+  &__project
+    color: #1abc9c
+    text-decoration: none
+    cursor: pointer
+
+    &:hover
+      text-decoration: none   
+      background-color: transparent
+
   &__text
     display: flex
     flex-direction: column
     flex-grow: 1
     max-width: 100%
     overflow: hidden
+
   &__title,
   &__description,
-  &__tags
+  &__tags,
+  &__name
     word-break: break-word
     overflow-wrap: break-word
     white-space: normal
+
   &__links
     background: #2c2c2c
     color: white
@@ -201,22 +267,39 @@ async function moveToDone(taskId, isDone) {
     margin: 2px
     cursor: pointer
     text-decoration: none
+    transition: background 0.2s
 
     &:hover
       background: #f39c12
 
   &__title
-    font-size: 30px
+    font-size: clamp(18px, 2vw, 30px)
     font-weight: 600
     color: #fff
 
   &__description
-    font-size: 16px
+    font-size: clamp(12px, 1.2vw, 18px)
     line-height: 1.4
 
   &__tags
-    font-size: 15px
+    font-size: clamp(14px, 1vw, 15px)
     color: rgba(255, 255, 255, 0.6)
+    max-width: 95%
+  &__name
+    display: inline-block
+    background: #3c2c54   
+    color: #fff
+    padding: 3px 10px
+    border-radius: 8px
+    font-size: 13px
+    font-weight: 500
+    cursor: pointer
+    margin: 2px 0
+    transition: background 0.2s
+    width: fit-content
+
+    &:hover
+      background: #5e3d82
 
   &__actions
     display: flex
@@ -243,86 +326,48 @@ async function moveToDone(taskId, isDone) {
 
   &__btn--delete
     color: #e74c3c
-@media (min-width: 360px) and (max-width: 499px)
+
+/* Media Queries для мелких экранов (если нужно дополнительное масштабирование) */
+@media (max-width: 499px)
   .task
-    &__title
-      font-size: 18px
-    &__description
-      font-size: 12px
     &__checkbox
       min-width: 18px
       height: 18px
     &__actions
       gap: 0px
       right: -4px
-    &__tags
-      max-width: 85%
-      font-size: 14px
+
 @media (min-width: 500px) and (max-width: 699px)
   .task
-    &__title
-      font-size: 20px  
-      max-width: 85%
-    &__description
-      font-size: 13px
-      max-width: 85%
     &__checkbox
       min-width: 20px
       height: 20px
     &__actions
       gap: 5px
       right: -4px
-    &__tags
-      max-width: 85%
+
 @media (min-width: 700px) and (max-width: 899px)
   .task
-    &__title
-      font-size: 22px
-      max-width: 370px
-    &__description
-      font-size: 14px
-      max-width: 370px
     &__checkbox
       min-width: 22px
       height: 22px
-    &__tags
-      max-width: 370px
+
 @media (min-width: 900px) and (max-width: 1199px)
   .task
-    &__title
-      font-size: 24px
-      max-width: 490px
-    &__description
-      font-size: 15px
-      max-width: 490px
     &__checkbox
       min-width: 24px
       height: 24px
+
 @media (min-width: 1200px) and (max-width: 1599px)
   .task
-    &__title
-      font-size: 26px
-      max-width: 740px
-    &__description
-      font-size: 16px
-      max-width: 740px
     &__checkbox
       min-width: 26px
       height: 26px
-    &__tags
-      max-width: 740px
+
 @media (min-width: 1600px)
   .task
-    &__title
-      font-size: 30px
-      max-width: 95%
-
-    &__description
-      font-size: 18px
-      max-width: 95%
     &__checkbox
       min-width: 30px
       height: 30px
-    &__tags
-      max-width: 95%
+
 </style>

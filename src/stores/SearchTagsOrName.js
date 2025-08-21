@@ -14,3 +14,17 @@ export const storeOfTags = defineStore("tagsStore", () => {
     setTags,
   }
 })
+
+export const storeOfName = defineStore("nameStore", () => {
+  const saveName = ref("")
+
+  function setName(name) {
+    saveName.value = name
+    console.log("saved name:", saveName.value)
+  }
+
+  return {
+    saveName,
+    setName,
+  }
+})

@@ -1,43 +1,58 @@
 <template>
   <div class="modal">
-    <div class="modal_box">
-      <header class="modal_box_header">
+    <div class="modal__box">
+      <header class="modal__header">
         <input
-          class="modal_box_title"
+          class="modal__title"
           type="text"
           placeholder="Title"
           v-model="title"
         />
       </header>
-      <main class="modal_box_main">
+
+      <main class="modal__main">
         <textarea
-          class="modal_box_description"
+          class="modal__description"
           placeholder="Description"
-          v-model="description"/>
+          v-model="description"
+        />
         <input
-          class="modal_box_tag"
+          class="modal__tag"
           type="text"
           placeholder="#"
           v-model="originTags"
         />
-      <nav class="modal__menu" v-if="task.category !=='done'">
-      <a 
-        v-for="section in filteredSections"
-        :key="`menu_${section.key}`"
-        class="modal__menu_item"
-        @click.prevent=  changeCategoryOfTask(section.key)
-        :class="{active: sectionSelected === section.key}"
-        
-      >
-        {{ section.title }}
-      </a>
-    </nav>
+        <input
+          v-if="activePage == 'waiting'"
+          class="modal__name"
+          v-model="originName"
+          placeholder="name"
+          type="text"
+          @keydown.space.prevent="preventSpace"
+        >
+        <nav class="modal__menu" v-if="task.category !== 'done'">
+          <div class="modal__menu_group">
+            <div
+              v-for="section in filteredSections"
+              :key="`menu_${section.key}`"
+              class="modal__menu_item"
+              @click.prevent="changeCategoryOfTask(section.key)"
+              :class="{ 'modal__menu_item--active': sectionSelected === section.key }"
+            >
+              {{ section.title }}
+            </div>
+          </div>
+          <AddProjectToTheTask v-model:project="projectSelected" />
+
+
+        </nav>
       </main>
-      <footer class="modal_box_footer">
-        <button class="modal_box_button modal_box_button--close" @click="$emit('close')">
+
+      <footer class="modal__footer">
+        <button class="modal__button modal__button_close" @click="$emit('close')">
           Close
         </button>
-        <button class="modal_box_button modal_box_button--create" @click="submitTask">
+        <button class="modal__button modal__button_create" @click="submitTask">
           Change
         </button>
       </footer>
@@ -45,12 +60,14 @@
   </div>
 </template>
 
+
 <script setup>
 import { ref, watch, computed} from 'vue'
 import { useModalsStore } from '../stores/ModalsDate'
 import { storeToRefs } from 'pinia'
 import {sections} from "../data/sections.js"
 import { useActivePageStore } from "../stores/activePage.js"
+import AddProjectToTheTask from "../views/AddProjectToTheTask.vue"
 const props = defineProps({ task: Object })
 const emit = defineEmits(['close'])
 
@@ -61,9 +78,14 @@ const { activePage } = storeToRefs(activePageStore)
 const title = ref('')
 const description = ref('')
 const originTags = ref('')
+const originName = ref('')
+const names = ref('')
 const sectionSelected = ref('')
+const projectSelected = ref(null)
+
+
 const filteredSections = computed(()=>{
-  return sections.value.filter(section => section.key !== 'trash' && section.key !== 'done' && section.category !== 'trash')
+  return sections.value.filter(section => section.key !== 'trash' && section.key !== 'done' && section.category !== 'trash' && section.isNew == false)
 })
 watch(() => props.task, (t) => {
   if (t) {
@@ -71,6 +93,8 @@ watch(() => props.task, (t) => {
     description.value = t.description || ''
     originTags.value = t.tags || ''
     sectionSelected.value = t.category || activePage.value
+    projectSelected.value = t.projectKey  || null
+    names.value = t.name || ''
   }
 }, { immediate: true })
 
@@ -78,6 +102,12 @@ function changeCategoryOfTask(key){
   sectionSelected.value = key
 
 }
+function preventSpace(event) {
+  if (event.code === 'Space') {
+    event.preventDefault()
+  }
+}
+
 
 
 function formatTags() {
@@ -101,13 +131,10 @@ function submitTask() {
     description: description.value,
     tags: originTags.value,
     category: sectionSelected.value || activePage.value,
+    projectKey: projectSelected.value,
+    name: originName.value
   }
 
-  const original = modalDates.value.find(t => t.id === updatedTask.id)
-  if (JSON.stringify(original) === JSON.stringify(updatedTask)) {
-    emit('close')
-    return
-  }
 
   modalsStore.upDateTask(updatedTask)
   emit('close')
@@ -115,7 +142,7 @@ function submitTask() {
 </script>
 
 <style scoped lang="sass">
-.modal 
+.modal
   position: fixed
   inset: 0
   display: flex
@@ -124,7 +151,7 @@ function submitTask() {
   background: rgba(0, 0, 0, 0.6)
   z-index: 1000
 
-  &_box 
+  &__box
     width: 550px
     background: #1e1e1e
     border-radius: 20px
@@ -134,80 +161,97 @@ function submitTask() {
     gap: 20px
     box-shadow: 0 0 15px rgba(0, 0, 0, 0.3)
 
-    &_header
-    &_main
-      display: flex
-      flex-direction: column
-      gap: 20px
-      
-    &_footer 
-      display: flex
-      justify-content: flex-end
-      gap: 10px
+  &__header,
+  &__main,
+  &__footer
+    display: flex
+    flex-direction: column
+    gap: 15px
 
-    &_title, &_description, &_tag
-      width: 100%
-      max-width: 500px
-      border-radius: 10px
-      padding: 10px
-      font-size: 16px
-      background-color: #2c2c2c
-      color: #fff
-      border: 1px solid #444
-      resize: none
+  &__footer
+    flex-direction: row
+    justify-content: flex-end
 
-    &_title
-      height: 50px
+  &__title,
+  &__description,
+  &__tag
+    width: 100%
+    border-radius: 10px
+    padding: 10px
+    font-size: 16px
+    background-color: #2c2c2c
+    color: #fff
+    border: 1px solid #444
+    resize: none
 
-    &_description
-      height: 100px
+  &__title
+    height: 50px
 
-    &_tag
-      height: 30px
+  &__description
+    height: 100px
 
-    &_button 
-      padding: 8px 16px
-      border-radius: 10px
-      border: none
-      cursor: pointer
-      font-weight: bold
-      color: #fff
-      transition: background-color 0.3s, transform 0.2s
+  &__tag
+    height: 30px
+  &__name
+    width: 100%
+    border-radius: 10px
+    padding: 10px
+    font-size: 16px
+    background-color: #2c2c2c
+    color: #fff
+    border: 1px solid #444
+    height: 30px
+    resize: none
+    
 
-      &--close 
-        background-color: #444
-        &:hover 
-          background-color: #666
+  &__button
+    padding: 8px 16px
+    border-radius: 10px
+    border: none
+    cursor: pointer
+    font-weight: bold
+    color: #fff
+    transition: background-color 0.3s, transform 0.2s
 
-      &--create 
-        background-color: #42b983
-        &:hover 
-          background-color: #369c6a
+    &_close
+      background-color: #444
+      &:hover
+        background-color: #666
 
-      &:active 
-        transform: scale(0.95)
+    &_create
+      background-color: #42b983
+      &:hover
+        background-color: #369c6a
+
+    &:active
+      transform: scale(0.95)
 
   &__menu
     display: flex
-    flex-wrap: wrap
-    gap: 10px
+    flex-direction: column
+    gap: 15px
+    &_group
+      display: flex
+      flex-wrap: wrap
+      gap: 8px
+      margin-top: 10px
 
     &_item
-      padding: 8px 16px
+      max-width: 140px
+      padding: 6px 10px
       background-color: #2c2c2c
       border: 1px solid #444
       border-radius: 8px
       color: #ccc
       cursor: pointer
+      font-size: 14px
+      white-space: nowrap
+      overflow: hidden
+      text-overflow: ellipsis
       transition: background-color 0.2s, transform 0.2s
-
-      &:hover
-         background-color: #3a3a3a
-
-      &.active
-          background-color: #42b983
-          color: #fff
-          font-weight: bold
-          transform: scale(1.05)
+      &--active
+        background-color: #42b983
+        color: #fff
+        transform: scale(1.05)
 
 </style>

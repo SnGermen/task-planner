@@ -25,6 +25,13 @@ export const useProjectStore = defineStore("projectStore", () => {
     await saveNewProject(newProject)
   }
 
+  function getProjectTitle(projectKey) {
+    const project = sections.value.find(
+      (sec) => sec.key == projectKey && !sec.isTrashed
+    )
+    return project ? project.title : ""
+  }
+
   async function setNameOfTitle(projectKey, newName) {
     const project = sections.value.find((p) => p.key === projectKey)
     if (project) {
@@ -71,5 +78,6 @@ export const useProjectStore = defineStore("projectStore", () => {
     restoreProjectT,
     onlyOldSections,
     onlyNewSections,
+    getProjectTitle,
   }
 })

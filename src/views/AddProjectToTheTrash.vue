@@ -1,22 +1,3 @@
-<script setup>
-import { computed, ref } from 'vue'
-import { storeToRefs } from 'pinia'
-import { useActivePageStore } from '../stores/activePage'
-import { useProjectStore } from "../stores/ProjectsDate"
-import { sections } from "../data/sections"
-
-const activePageStore = useActivePageStore()
-const { activePage } = storeToRefs(activePageStore)
-
-const modalConfig = ref(false)
-const selectedProject = ref(null)
-
-const onlyNewDelatedSections = computed(() => {
-  if (activePage.value !== "trash") return []
-  return sections.value.filter(sec => sec.isNew && sec.category === "trash")
-})
-</script>
-
 <template>
   <div
     v-for="project in onlyNewDelatedSections"
@@ -42,6 +23,27 @@ const onlyNewDelatedSections = computed(() => {
     </div>
   </div>
 </template>
+
+<script setup>
+import { computed, ref } from 'vue'
+import { storeToRefs } from 'pinia'
+import { useActivePageStore } from '../stores/activePage'
+import { useProjectStore } from "../stores/ProjectsDate"
+import { sections } from "../data/sections"
+
+const activePageStore = useActivePageStore()
+const { activePage } = storeToRefs(activePageStore)
+
+const modalConfig = ref(false)
+const selectedProject = ref(null)
+
+const onlyNewDelatedSections = computed(() => {
+  if (activePage.value !== "trash") return []
+  return sections.value.filter(sec => sec.isNew && sec.category === "trash")
+})
+</script>
+
+
 
 <style scoped lang="sass">
 .project

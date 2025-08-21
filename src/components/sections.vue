@@ -20,10 +20,10 @@
         :class="{active: section.key == activePage}"
       >
       <button class="wrapper__delete" @click="projectStore.moveProjectToTheTrash(section.key) ">❌</button>
-      <!-- <button class="wrapper__delete" @click="projectStore.removeProject(section.key) ">❌</button> -->
        <span class="wrapper__text_new"> {{ section.title }} </span>
       </a> 
     </nav>
+    
 
     <div class="wrapper__content">
       <input  

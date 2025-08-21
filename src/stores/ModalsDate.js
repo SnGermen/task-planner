@@ -19,6 +19,8 @@ export const useModalsStore = defineStore("modalStore", () => {
       isTrashed: false,
       isDone: false,
       tags: task.tags,
+      name: task.name || "",
+      projectKey: task.projectKey || null,
     }
     await saveTask(newTask)
     modalDates.value.push(newTask)

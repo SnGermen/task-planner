@@ -9,7 +9,7 @@
 
 <script setup>
 import { ref, computed, watch } from "vue"
-import {storeOfTags} from "../stores/SearchTags.js"
+import {storeOfTags} from "../stores/SearchTagsOrName.js"
 
 const valueOfInput = ref("")
 const tagsStore = storeOfTags()
