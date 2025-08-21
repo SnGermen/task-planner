@@ -59,6 +59,7 @@ const onlyNewDelatedSections = computed(() => {
     transition: background-color 0.2s ease
     overflow: hidden
     gap: 0.75rem
+    margin-top: 0.5rem
 
     &:hover
       background-color: #2a2a2a
