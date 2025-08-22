@@ -100,15 +100,19 @@ const filter = computed(() => {
       ? (task.name || "").toLowerCase().includes(nameSearch.toLowerCase())
       : true
 
-    if (sections.value.some(sec => sec.key === activePage.value && !sec.isNew)) {
-      return task.category === activePage.value && tagMatch && nameMatch
-    }
+    const activeSection = sections.value.find(sec => sec.key == activePage.value)
+    if(!activeSection) return false
 
-    if (sections.value.some(sec => sec.key === activePage.value && sec.isNew)) {
-      return task.projectKey === activePage.value && tagMatch && nameMatch
-    }
-
-    return false
+if(!activeSection.isNew){
+  return task.category === activeSection.key && tagMatch && nameMatch
+}
+if(activeSection.isNew){
+  if(!task.projectKey){
+    task.projectKey = activePage.value
+  }
+  return task.projectKey === activeSection.key   && tagMatch && nameMatch
+}
+   return false
   })
 })
 
