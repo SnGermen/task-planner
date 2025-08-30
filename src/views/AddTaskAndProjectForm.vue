@@ -72,6 +72,9 @@ const { saveTags } = storeToRefs(tagsStore)
 const { saveName } = storeToRefs(nameStore)
 const modalConfig  = ref(false)
 const selectedTask = ref(null)
+  const onlyOldSections = computed(() => {
+    return sections.value.filter((sec) => !sec.isNew)
+  })
 
 function title(projectKey){
   return projectStore.getProjectTitle(projectKey)
@@ -107,10 +110,8 @@ if(!activeSection.isNew){
   return task.category === activeSection.key && tagMatch && nameMatch
 }
 if(activeSection.isNew){
-  if(!task.projectKey){
-    task.projectKey = activePage.value
-  }
-  return task.projectKey === activeSection.key   && tagMatch && nameMatch
+
+  return task.projectKey === activeSection.key   && tagMatch && nameMatch 
 }
    return false
   })
@@ -124,20 +125,23 @@ function toggleConfig(task) {
 
 async function moveToTrash(taskId) {
   const task = modalDates.value.find(t => t.id === taskId)
+  const project = sections.value.find(p => p.key == task?.projectKey)
+  if (!task) return
   if (task.category === "trash") {
     await deleteTask(taskId)
     modalDates.value = modalDates.value.filter(t => t.id !== taskId)
-    
     return
   }
-  if (task) {
-    task.originCategory = task.category 
-    task.isTrashed = true
-    task.category = "trash"
-    await saveTask({ ...task })
-    
+  if (project?.isNew) {
+    task.projectKey = null
+    return
   }
+  task.originCategory = task.category
+  task.isTrashed = true
+  task.category = "trash"
+  await saveTask({ ...task })
 }
+
 function filterByTad(tag) {
   const tagWithoutHash = tag.replace(/^#/, "")
   saveTags.value = tagWithoutHash
@@ -277,7 +281,8 @@ async function moveToDone(taskId, isDone) {
       background: #f39c12
 
   &__title
-    font-size: clamp(18px, 2vw, 30px)
+    max-width: 90%
+    font-size: 25px
     font-weight: 600
     color: #fff
 

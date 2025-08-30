@@ -41,7 +41,7 @@
               :key="`menu_${section.key}`"
               class="modal__menu_item"
               @click.prevent="changeCategoryOfTask(section.key)"
-              :class="{ 'modal__menu_item--newActive': sectionSelected === section.key }"
+              :class="{'modal__menu_item--newActive': sectionSelected === section.key }"
             >
               {{ section.title }}
             </div>
@@ -134,12 +134,14 @@ function submitTask() {
       category: sectionSelected.value || activePage.value,
       tags: onInput(),
       name: originName.value,
-      projectKey: projectSelected.value || null
+      projectKey: projectSelected.value || sections.value.find(sec => sec.key === activePage.value && sec.isNew)?.key || null,
     })
     title.value = ''
     description.value = ''
     projectSelected.value = null
-    emit('close')
+    sectionSelected.value = null
+    names.value = ''
+    originTags.value = ''
   } else {
     console.log('Заполни оба поля')
   }

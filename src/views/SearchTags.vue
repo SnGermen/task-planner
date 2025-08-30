@@ -3,7 +3,7 @@
     type="text"
     v-model="valueOfInput"
     placeholder="#"
-    class="search-input"
+    class="search_input"
   />
 </template>
 
@@ -11,8 +11,10 @@
 import { ref, computed, watch } from "vue"
 import {storeOfTags} from "../stores/SearchTagsOrName.js"
 
+
 const valueOfInput = ref("")
 const tagsStore = storeOfTags()
+
 
 watch(valueOfInput, (newTag)=>{
   tagsStore.setTags(newTag)
@@ -20,7 +22,7 @@ watch(valueOfInput, (newTag)=>{
 </script>
 
 <style scoped lang="sass">
-.search-input
+.search_input
   display: flex
   width: 300px
   padding: 6px 12px
@@ -31,12 +33,13 @@ watch(valueOfInput, (newTag)=>{
   font-size: 16px
   outline: none
   transition: border-color 0.3s ease
+  margin-top: 10px
 
   &:focus
     border-color: #f1c40f
     background-color: #1e1e1e
     
 @media(max-width: 700px)
-  .search-input
+  .search_input
     width: 200px
 </style>

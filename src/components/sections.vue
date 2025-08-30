@@ -19,36 +19,45 @@
         @click.prevent="goToSection(section.key)"
         :class="{active: section.key == activePage}"
       >
-      <button class="wrapper__delete" @click="projectStore.moveProjectToTheTrash(section.key) ">❌</button>
-       <span class="wrapper__text_new"> {{ section.title }} </span>
+        <button class="wrapper__delete" @click.stop="projectStore.moveProjectToTheTrash(section.key)">❌</button>
+        <span class="wrapper__text_new">{{ section.title }}</span>
       </a> 
     </nav>
-    
-
     <div class="wrapper__content">
-      <input  
-        v-if="activeSection?.isNew" 
-        type="text" 
-        class="wrapper__title" 
-        v-model="getActiveSectionTitle"
-      >
-      <div v-else class="wrapper__title">{{ activeSection?.title }}</div>
-
-      <button
-        v-if="isAddButtonVisible"
-        class="wrapper__add-button"
-        @click="toggleModal"
-      >
-        Add Task
-      </button>
-      <ModalAdd v-if="showModal" @close="toggleModal" />
-      
       <div class="wrapper__header">
-        <SearchTags />
-        <AddTaskAndProjectForm />
-      </div>
-    </div>
+        <div class="wrapper__title-container">
+          <input  
+            v-if="activeSection?.isNew" 
+            type="text" 
+            class="wrapper__title" 
+            v-model="getActiveSectionTitle"
+          >
+          <div v-else class="wrapper__title">{{ activeSection?.title }}</div>
+        </div>
+        <div class="wrapper__header-buttons">
+          <button
+            v-if="isAddButtonVisible"
+            class="wrapper__add-button"
+            @click="toggleModal">
+            Add Task
+          </button>
 
+          <button class="wrapper__clear-button" v-if="activePage == 'trash'" @click="clearAll">
+            Clear All
+          </button>
+          <button 
+            class="wrapper__back-button" 
+            @click="clearSearch" 
+            v-if="saveTags || saveName">
+            Back
+          </button>
+
+        </div>
+      </div>
+      <SearchTags :key="resetInput"/>
+      <AddTaskAndProjectForm />
+      <ModalAdd v-if="showModal" @close="toggleModal" />
+    </div>
     <div class="pomodoro">
       <button
         class="pomodoro__button"
@@ -69,6 +78,7 @@
   </div>
 </template>
 
+
 <script setup>
 import { ref, computed, onMounted } from "vue"
 import { storeToRefs } from "pinia"
@@ -82,6 +92,9 @@ import NewProject from "../views/NewProject.vue"
 import { usePomodoro } from "../stores/pomodoro.js" 
 import { useProjectStore} from "../stores/ProjectsDate.js"
 import { deleteProject, saveNewProject} from "../data/db.js"
+import {storeOfTags} from "../stores/SearchTagsOrName.js"
+import {storeOfName} from "../stores/SearchTagsOrName.js"
+import { useModalsStore } from "../stores/ModalsDate.js"
 
 const activePageStore = useActivePageStore()
 const pomodoro = usePomodoro()
@@ -90,13 +103,32 @@ const showModal = ref(false)
 const isPomodoroOpen = ref(false)
 const { formattedTime, isRunning } = storeToRefs(pomodoro)
 const projectStore = useProjectStore()
+const modalStore = useModalsStore()
+const {saveTags} = storeToRefs(storeOfTags())
+const {saveName} = storeToRefs(storeOfName())
+const resetInput = ref(false)
+
 const {onlyNewSections, onlyOldSections} = storeToRefs(useProjectStore())
+
 const activeSection  = computed(() => {
   return sections.value.find(sec => sec.key === activePage.value)
 })
 
 function togglePomodoro() {
   isPomodoroOpen.value = !isPomodoroOpen.value
+}
+function clearSearch(){
+  storeOfName().clearName()
+  storeOfTags().clearTags()
+  
+  resetInput.value = !resetInput.value
+}
+
+function clearAll(){
+  if (activePage.value === 'trash') {
+    projectStore.clearAllProjectsInTheTrash()
+    modalStore.clearAllTasksInTheTrash()
+  }
 }
 
 function toggleModal() {
@@ -220,6 +252,29 @@ html, body
     overflow: hidden
     text-overflow: ellipsis
     height: auto
+  
+  &__header-buttons
+    display: flex
+    gap: 10px
+    justify-content: space-between
+    
+
+  &__clear-button
+    background-color: #e74c3c
+    color: white
+    padding: 0.5rem 1rem
+    border-radius: 8px
+    border: none
+    cursor: pointer
+    transition: background-color 0.2s ease
+    font-size: clamp(12px, 1.5vw, 16px)
+    white-space: nowrap
+    display: flex
+    justify-content: end
+
+
+    &:hover
+      background-color: #c0392b
 
   &__add-button
     background-color: #444
@@ -228,14 +283,25 @@ html, body
     border-radius: 8px
     border: none
     cursor: pointer
-    margin-bottom: 1.5rem
     transition: background-color 0.2s ease
     font-size: clamp(12px, 1.5vw, 16px)
     white-space: nowrap
 
     &:hover
       background-color: #666
-
+  .wrapper__back-button
+    background-color: #f39c12
+    width: 60px
+    height: 30px
+    color: #121212
+    border: none
+    border-radius: 8px
+    padding: 6px 12px
+    cursor: pointer
+    transition: background-color 0.2s ease, transform 0.2s ease
+    white-space: nowrap
+    align-self: center
+    font-size: clamp(12px, 1.5vw, 16px)
 .pomodoro
   position: fixed
   bottom: 20px

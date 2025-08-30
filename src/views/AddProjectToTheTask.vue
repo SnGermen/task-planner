@@ -7,7 +7,7 @@
         :key="`menu_${section.key}`"
         class="modal__menu_item"
         @click="selectProject(section.key)"
-        :class="{ 'modal__menu_item--newActive': project === section.key }"
+        :class="{'modal__menu_item--newActive': project === section.key }"
       >
         {{ section.title }}
       </div>
@@ -31,6 +31,10 @@ const filteredNewSections = computed(() => {
 })
 
 function selectProject(key) {
+  if(project.value ===key){
+    project.value = null
+    return
+  }
   project.value = key   
 }
 </script>

@@ -1,6 +1,6 @@
 import { ref } from "vue"
 import { defineStore } from "pinia"
-import { loadTasks, saveTask } from "../data/db"
+import { loadTasks, saveTask, deleteTask } from "../data/db"
 
 export const useModalsStore = defineStore("modalStore", () => {
   const modalDates = ref([])
@@ -26,6 +26,7 @@ export const useModalsStore = defineStore("modalStore", () => {
     modalDates.value.push(newTask)
     console.log("Добавлена задача:", newTask)
   }
+
   function upDateTask(task) {
     const index = modalDates.value.findIndex((i) => i.id === task.id)
     if (index !== -1) {
@@ -33,6 +34,17 @@ export const useModalsStore = defineStore("modalStore", () => {
       saveTask(task)
     }
   }
+  async function clearAllTasksInTheTrash() {
+    const tasksInTheTrash = modalDates.value.filter(
+      (t) => t.category == "trash"
+    )
+
+    for (const task of tasksInTheTrash) {
+      modalDates.value = modalDates.value.filter((t) => t.id !== task.id)
+      await deleteTask(task.id)
+    }
+  }
+
   return {
     modalDates,
     initStore,
@@ -40,5 +52,6 @@ export const useModalsStore = defineStore("modalStore", () => {
     loadTasks,
     saveTask,
     upDateTask,
+    clearAllTasksInTheTrash,
   }
 })

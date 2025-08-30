@@ -9,9 +9,14 @@ export const storeOfTags = defineStore("tagsStore", () => {
     console.log("saved tag:", saveTags.value)
   }
 
+  function clearTags() {
+    saveTags.value = ""
+  }
+
   return {
     saveTags,
     setTags,
+    clearTags,
   }
 })
 
@@ -23,8 +28,13 @@ export const storeOfName = defineStore("nameStore", () => {
     console.log("saved name:", saveName.value)
   }
 
+  function clearName() {
+    saveName.value = ""
+  }
+
   return {
     saveName,
     setName,
+    clearName,
   }
 })
